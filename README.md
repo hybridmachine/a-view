@@ -19,6 +19,17 @@ npm run check
 npm test
 ```
 
+## Deploy to the web
+
+The [Ubuntu deployment guide](docs/deployment.md) configures **theplaces.online** on standard HTTP/HTTPS ports using Caddy, Node.js 24, and systemd. It includes SSH deployment scripts, persistent world data, daily SQLite backups, health checks, and application rollback.
+
+```sh
+bash scripts/deploy.sh setup YOUR_SSH_TARGET
+bash scripts/deploy.sh deploy YOUR_SSH_TARGET
+```
+
+HTTP redirects to HTTPS; Caddy obtains and renews certificates automatically. See the guide for DNS and firewall prerequisites before running setup.
+
 ## What works in this first prototype
 
 - Full-viewport daytime and nighttime oil paintings, with subtle GPU water/foliage movement and authored night illumination.
@@ -56,7 +67,7 @@ This is the first visual and continuity prototype. The spring landscape is paint
 
 The nest study ends when construction finishes. Aging, breeding, generations, inhabitants' routines, squirrels, ecological resource budgets, water accumulation, additional scenes, and region transfers remain design work. Ambient distant birds and smoke are visual effects, not individually persisted entities. Rain currently changes appearance without a persisted water budget. The sky is an approximate procedural study, not an astronomical ephemeris. Sound is synthesized ambience, not a spatial ecological soundscape.
 
-The world is shared by browsers connected to this running local server. It is not publicly hosted. The application binds to loopback. SQLite is a deliberate small-prototype substitute for the planned PostgreSQL infrastructure; this version is a single-process deployment. Every stream update sends a complete bounded snapshot, so a reconnect does not depend on replaying stream deltas. Out-of-order responses cannot replace newer state or rewind the displayed clock. The view holds just before a pending delivery completes until a committed snapshot includes its effects. Expired snapshots trigger a bounded HTTP refresh even when the stream has silently stalled; overlapping refreshes share one request.
+The world is shared by browsers connected to the same server. The application binds to loopback; the production configuration exposes it through Caddy. SQLite is a deliberate small-prototype substitute for the planned PostgreSQL infrastructure; this version is a single-process deployment. Every stream update sends a complete bounded snapshot, so a reconnect does not depend on replaying stream deltas. Out-of-order responses cannot replace newer state or rewind the displayed clock. The view holds just before a pending delivery completes until a committed snapshot includes its effects. Expired snapshots trigger a bounded HTTP refresh even when the stream has silently stalled; overlapping refreshes share one request.
 
 ## Structure
 

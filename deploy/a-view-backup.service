@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up A View's SQLite world
+ConditionPathExists=/var/lib/a-view/world.sqlite
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/a-view-release backup
+UMask=0077
+Nice=10
