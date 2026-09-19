@@ -1,0 +1,34 @@
+[Unit]
+Description=A View shared world
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=a-view
+Group=a-view
+WorkingDirectory=/opt/a-view/current
+ExecStart=/opt/a-view/node/bin/node src/server.js
+Environment=NODE_ENV=production
+Environment=PORT=4173
+Environment=A_VIEW_DB=/var/lib/a-view/world.sqlite
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+UMask=0027
+StateDirectory=a-view
+StateDirectoryMode=0750
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

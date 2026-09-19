@@ -1,0 +1,10 @@
+# Managed by a-view deployment scripts.
+@DOMAIN@ {
+	encode zstd gzip
+
+	@development path /dev /dev/*
+	respond @development 404
+
+	# Caddy flushes text/event-stream responses immediately, preserving SSE.
+	reverse_proxy 127.0.0.1:4173
+}

@@ -20,5 +20,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
+      - run: sudo apt-get update && sudo apt-get install -y sqlite3 shellcheck
+      - run: bash -n scripts/deploy.sh deploy/*.sh && shellcheck scripts/deploy.sh deploy/*.sh
       - run: npm run check
       - run: npm test
