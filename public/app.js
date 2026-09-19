@@ -1,6 +1,8 @@
 import { calendar, clockLabel, viewConditions } from '/shared/world.js';
 import { Painting } from './painting.js';
 import { Ambience } from './sound.js';
+import { WorldClient } from './world-client.js';
+import { sceneText } from './scene-description.js';
 
 const $=selector=>document.querySelector(selector);
 const icons={
@@ -16,9 +18,10 @@ function icon(element,name){element.innerHTML=`<svg viewBox="0 0 24 24" aria-hid
 document.querySelectorAll('[data-icon]').forEach(element=>icon(element,element.dataset.icon));
 icon($('#sound-button .icon'),'muted');
 const painter=new Painting($('#painting'),$('#life')),audio=new Ambience();
-let snapshot=null,pausedSnapshot=null,anchorServer=0,anchorPerformance=performance.now(),pausedAt=null,study=null,lastRender=0,lastLabels=0,lastRevision=0,connection='connecting',toastTimer,quietTimer;
+const client=new WorldClient({onSnapshot:accept});
+let snapshot=null,pausedSnapshot=null,pausedAt=null,study=null,lastRender=0,lastLabels=0,lastRevision=0,connection='connecting',toastTimer,quietTimer;
 let followed=false;try{followed=localStorage.getItem('a-view:follow:lakeside-cottage')==='true';}catch{}
-const now=()=>pausedAt??Math.min(anchorServer+(performance.now()-anchorPerformance),snapshot?.validUntil??Infinity);
+const now=()=>pausedAt??client.now();
 function toast(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').classList.add('show');toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3500);}
 function isDialogOpen(){return [...document.querySelectorAll('dialog')].some(d=>d.open);}
 function wake(){document.querySelectorAll('.chrome').forEach(e=>e.classList.remove('quiet'));clearTimeout(quietTimer);quietTimer=setTimeout(()=>{if(!isDialogOpen()&&!study&&!pausedAt&&connection==='live'&&!document.querySelector('.chrome :focus-visible'))document.querySelectorAll('.chrome').forEach(e=>e.classList.add('quiet'));},12_000);}
@@ -38,7 +41,12 @@ function updateFollow(){
   $('#follow-status').textContent=followed?'Saved among your places on this device.':'Follow a place to keep it close.';
 }
 $('#follow-button').onclick=()=>{followed=!followed;try{localStorage.setItem('a-view:follow:lakeside-cottage',String(followed));}catch{toast('Following for this visit. Storage is unavailable.');updateFollow();return;}updateFollow();toast(followed?'A place to return to. Saved on this device.':'This place has been unfollowed.');};updateFollow();
-$('#sound-button').onclick=async()=>{try{const enabled=await audio.toggle();$('#sound-button').setAttribute('aria-pressed',String(enabled));$('#sound-button').setAttribute('aria-label',enabled?'Turn off sound':'Turn on sound');$('#sound-button').dataset.tip=enabled?'Sound on':'Sound off';icon($('#sound-button .icon'),enabled?'sound':'muted');toast(enabled?'A little closer to the water.':'Sound is off.');}catch(error){toast(error.message);}};
+$('#sound-button').onclick=async()=>{
+  const button=$('#sound-button');button.disabled=true;
+  try{const enabled=await audio.toggle();button.setAttribute('aria-pressed',String(enabled));button.setAttribute('aria-label',enabled?'Turn off sound':'Turn on sound');button.dataset.tip=enabled?'Sound on':'Sound off';icon($('#sound-button .icon'),enabled?'sound':'muted');toast(enabled?'A little closer to the water.':'Sound is off.');}
+  catch(error){toast(error.message);}
+  finally{button.disabled=false;}
+};
 $('#pause-button').onclick=()=>{
   if(!snapshot)return;
   if(pausedAt===null){pausedAt=now();pausedSnapshot=structuredClone(snapshot);}else{pausedAt=null;pausedSnapshot=null;}
@@ -52,13 +60,13 @@ document.querySelectorAll('[data-light]').forEach(button=>button.onclick=()=>{if
 $('#return-live').onclick=()=>{study=null;document.querySelectorAll('[data-light]').forEach(b=>b.setAttribute('aria-pressed','false'));if(pausedAt!==null)$('#pause-button').click();updateLabels();wake();};
 
 function accept(data){
-  // Snapshot timestamps, never the visitor's local date, anchor the shared clock.
-  snapshot=data;anchorServer=data.serverTime;anchorPerformance=performance.now();connection='live';
+  // WorldClient has checked ordering and anchored the shared clock before this callback.
+  snapshot=data;connection='live';
   if(lastRevision&&data.world.revision>lastRevision)$('#note-dot').hidden=false;
   if(data.world.revision!==lastRevision){updateNotes();lastRevision=data.world.revision;}
   updateLabels();
 }
-async function refresh(){const response=await fetch('/api/world',{cache:'no-store'});if(!response.ok)throw new Error('World is unavailable');accept(await response.json());}
+function refresh(){return client.refresh();}
 function updateNotes(){
   if(!snapshot)return;
   const nest=snapshot.world.nest;$('#nest-detail').textContent=nest.stage==='built'?'A woven shelter, ready for what comes next.':`${nest.materials} strands gathered. The work continues.`;
@@ -75,13 +83,13 @@ function updateLabels(){
   $('#season').textContent=c.dayOfYear>=120&&c.dayOfYear<172?'Late spring':c.season;
   $('#weather').textContent=study?{dawn:'First light',day:'Afternoon light',dusk:'The last light',night:'Under the night sky',rain:'Passing rain'}[study]:w.name;
   $('#world-time').textContent=clockLabel(c.hour);$('#world-time').setAttribute('aria-label',`World time ${clockLabel(c.hour)}`);
-  const stale=anchorServer+(performance.now()-anchorPerformance)>snapshot.validUntil;
+  const stale=client.isExpired();
   $('#live-label').textContent=study?'Light study':pausedAt!==null?'View paused':stale?'Connection lost':connection==='live'?'A shared, living world':'Reconnecting';
   $('#live-dot').classList.toggle('offline',connection!=='live'||stale);$('#return-live').hidden=!study;
   if(stale)wake();
-  const description=`${study?'Private light study. ':''}${c.season}, year ${c.year}, day ${c.dayOfYear+1}. ${c.period}, ${clockLabel(c.hour)}. ${w.name}. ${shownSnapshot.world.nest.stage==='built'?'A completed nest rests in the oak.':'A bird is building a nest in the oak.'}${pausedAt!==null?' This view is paused.':''}`;
-  // Avoid announcing an unchanged scene on every streamed snapshot.
+  const {description,announcement}=sceneText(shownSnapshot,now(),{study,paused:pausedAt!==null,disconnected:stale});
   if($('#scene-description').textContent!==description)$('#scene-description').textContent=description;
+  if($('#scene-announcement').textContent!==announcement)$('#scene-announcement').textContent=announcement;
 }
 function frame(timestamp){
   requestAnimationFrame(frame);if(document.hidden||timestamp-lastRender<1000/30)return;lastRender=timestamp;
@@ -92,11 +100,11 @@ let dragging=false,previousX=0;
 $('#world').addEventListener('pointerdown',e=>{dragging=true;previousX=e.clientX;$('#world').setPointerCapture(e.pointerId);});
 $('#world').addEventListener('pointermove',e=>{if(dragging){painter.panBy(e.clientX-previousX);previousX=e.clientX;}});
 $('#world').addEventListener('pointerup',()=>dragging=false);$('#world').addEventListener('pointercancel',()=>dragging=false);
-document.addEventListener('visibilitychange',()=>{audio.visibility();if(!document.hidden)refresh().catch(()=>{connection='reconnecting';updateLabels();});});
+document.addEventListener('visibilitychange',()=>{audio.visibility().catch(error=>console.warn('Audio visibility update failed',error));if(!document.hidden)refresh().catch(()=>{connection='reconnecting';updateLabels();});});
 
 try{await Promise.all([painter.init(),refresh()]);}catch(error){console.error(error);toast('The painting is here. Reconnecting to the world…');}
 const stream=new EventSource('/api/stream');
-stream.onmessage=event=>{try{accept(JSON.parse(event.data));}catch(error){console.error('Invalid world update',error);}};
+stream.onmessage=event=>{try{client.accept(JSON.parse(event.data));}catch(error){console.error('Invalid world update',error);}};
 stream.onerror=()=>{connection='reconnecting';updateLabels();wake();};
-setInterval(()=>{if(connection!=='live'&&!document.hidden)refresh().catch(()=>{});},10_000);
+setInterval(()=>{if(!document.hidden)client.recover(connection!=='live').catch(()=>{connection='reconnecting';updateLabels();});},1000);
 requestAnimationFrame(frame);wake();

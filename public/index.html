@@ -12,12 +12,13 @@
   <script type="module" src="/app.js"></script>
 </head>
 <body>
-  <main id="world" aria-label="A living oil painting of the lakeside cottage">
+  <main id="world" aria-label="A living oil painting of the lakeside cottage" aria-describedby="scene-description">
     <img id="fallback" src="/assets/lakeside-day.png" alt="An old stone cottage beneath a spreading oak. A worn path curves through wildflowers toward a still lake, with soft hills beyond.">
     <canvas id="painting" aria-hidden="true"></canvas>
     <canvas id="life" aria-hidden="true"></canvas>
     <div class="edge-shade" aria-hidden="true"></div>
-    <p id="scene-description" class="sr-only" aria-live="polite">Connecting to Stillwater Valley.</p>
+    <p id="scene-description" class="sr-only">Connecting to Stillwater Valley.</p>
+    <p id="scene-announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
   </main>
 
   <header class="chrome topbar">
