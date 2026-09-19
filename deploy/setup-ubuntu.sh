@@ -31,14 +31,16 @@ if [[ -f /etc/caddy/Caddyfile ]] && ! grep -q '^# Managed by a-view deployment s
     [[ -n $package_hash && $package_hash == "$current_hash" ]] || \
         die 'An unmanaged /etc/caddy/Caddyfile already exists. Merge the deploy/Caddyfile site block into your existing setup manually.'
 fi
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y ca-certificates curl gnupg debian-keyring debian-archive-keyring apt-transport-https xz-utils sqlite3 util-linux iproute2 ufw
+
+# Minimal Ubuntu images may lack ss; iproute2 above provides it. Check for
+# conflicting listeners before installing Caddy, whose package starts its service.
 listeners=$(ss -H -ltnp '( sport = :80 or sport = :443 )')
 if [[ -n $listeners ]] && printf '%s\n' "$listeners" | grep -v '"caddy"' >/dev/null; then
     die 'Another service owns port 80 or 443. Resolve that conflict before setup.'
 fi
-
-export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y ca-certificates curl gnupg debian-keyring debian-archive-keyring apt-transport-https xz-utils sqlite3 util-linux ufw
 
 work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
