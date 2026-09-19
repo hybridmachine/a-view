@@ -1,3 +1,4 @@
+import { sampleWind, WIND_MEAN } from './wind.js';
 // All durable actions use server milliseconds. Calendar progress is a separate domain.
 export const RATE = 365 / 30;
 export const WORLD_DAY = 86_400_000;
@@ -9,11 +10,30 @@ export const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return 
 export const mod = (x, n) => ((x % n) + n) % n;
 export function hash(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
 
+const lakesideWidth = 1672;
 export const SCENES = [{
   id: 'lakeside-cottage', regionId: 'stillwater', title: 'The Lakeside Cottage',
-  region: 'Stillwater Valley', number: '01', width: 1672, height: 941,
+  region: 'Stillwater Valley', number: '01', width: lakesideWidth, height: 941,
   description: 'An old cottage at the edge of the water. A path worn by years of coming and going. In the oak, a small beginning.',
   assets: { day: '/assets/lakeside-day.png', night: '/assets/lakeside-night.png' },
+  sky: {
+    version: 1, seed: 617, atlasSize: [2048, 1024],
+    assets: {
+      day: '/assets/lakeside-sky-v1/sky-day.png', night: '/assets/lakeside-sky-v1/sky-night.png',
+      foregroundDay: '/assets/lakeside-sky-v1/foreground-day.png', foregroundNight: '/assets/lakeside-sky-v1/foreground-night.png',
+      clouds: '/assets/lakeside-sky-v1/cloud-atlas.png',
+    },
+    layers: [
+      { id: 'distant', rect: [4, 4, 2040, 504], period: 1.6, top: -.13, height: .50, initialPhase: .26,
+        speed: .32 / (lakesideWidth * WIND_MEAN), deformationPeriod: 173, deformationAmount: .006,
+        density: { softness: .24, opacity: .76, fullAt: .65, overcastAt: .62 },
+        dayTint: [1, .99, .95], nightTint: [.25, .32, .42] },
+      { id: 'near', rect: [4, 516, 2040, 504], period: 1.25, top: -.09, height: .48, initialPhase: .68,
+        speed: .72 / (lakesideWidth * WIND_MEAN), deformationPeriod: 127, deformationAmount: .009,
+        density: { softness: .20, opacity: 1, fullAt: .76, overcastAt: .70 },
+        dayTint: [1, .98, .92], nightTint: [.28, .34, .43] },
+    ],
+  },
   nest: { id: 'oak-nest-01', x: 0.234, y: 0.245 },
   cottage: { door: [0.338, 0.582], chimney: [0.242, 0.36] },
 }];
@@ -47,7 +67,7 @@ export function weather(epoch, now) {
   const elapsed = (now - epoch) / 1000;
   const cloud = clamp(.28 + .3 * Math.sin(elapsed / 470 - 1) + .21 * Math.sin(elapsed / 1100));
   const rain = smooth(.60, .78, cloud);
-  const wind = .28 + .13 * Math.sin(elapsed / 83) + .12 * Math.sin(elapsed / 221);
+  const wind = sampleWind(elapsed);
   return { cloud, rain, wind, name: rain > .12 ? 'Passing rain' : cloud > .5 ? 'Cloudy skies' : cloud > .2 ? 'Soft clouds' : 'Clear skies' };
 }
 export function viewConditions(epoch, now, study = null) {

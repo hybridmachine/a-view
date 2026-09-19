@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sky study · A View</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#14221e;color:#f4f1e7;font:13px system-ui}#world{position:fixed;inset:0}#world canvas,#fallback{position:absolute;width:100%;height:100%;inset:0}#fallback{object-fit:cover}#painting{opacity:0}#painting.ready{opacity:1}#life{pointer-events:none}
+aside{position:fixed;top:14px;left:14px;width:290px;max-height:calc(100vh - 28px);overflow:auto;padding:18px;background:#172620ed;border:1px solid #ffffff30;border-radius:8px}h1{font:25px Georgia;margin:0 0 6px}p{line-height:1.5;color:#c8d3c5}label{display:block;margin:10px 0}input,select,button{font:inherit;accent-color:#d6dbb4}input[type=number],select{width:100%;padding:5px}input[type=range]{width:100%}button{padding:6px 10px;margin:4px 3px 4px 0;cursor:pointer}pre{font:11px monospace;white-space:pre-wrap;overflow-wrap:anywhere}details{margin-top:12px}#results{white-space:pre-wrap}.pass{color:#bedaa8}.fail{color:#ffbaae}aside.hidden{display:none}
+</style>
+<div id="world"><img id="fallback" src="/assets/lakeside-day.png" alt="Lakeside painting"><canvas id="painting"></canvas><canvas id="life"></canvas></div>
+<aside><h1>Sky study</h1><p>Fixed inputs, no persisted world changes. Drag the painting to pan. H hides controls.</p>
+<label>Fixture <select id="fixture"></select></label>
+<label>Elapsed real seconds <input id="time" type="number" value="1000" step="10"></label>
+<label>Cloud motion seconds <input id="motion" type="number" value="1000" step="10"></label>
+<label>Cloud cover <input id="cover" type="range" min="0" max="1" value=".4" step=".01"></label>
+<label>Fixed world hour <input id="hour" type="range" min="0" max="24" value="0" step=".1"></label>
+<label>Inspect <select id="debug"><option value="0">Completed scene</option><option value="1">Foreground alpha</option><option value="2">Distant cloud alpha</option><option value="3">Near cloud alpha</option><option value="4">Combined transmission</option><option value="5">Sky before foreground</option></select></label>
+<label><input id="far" type="checkbox" checked> Distant clouds</label><label><input id="near" type="checkbox" checked> Near clouds</label>
+<label><input id="fixed" type="checkbox" checked> Controlled full moon</label>
+<label>Moon X <input id="moonX" type="range" min="0" max="1" value=".78" step=".001"></label>
+<label>Moon Y <input id="moonY" type="range" min="0" max=".6" value=".16" step=".001"></label>
+<button id="play">Play crossing</button><button id="tests">Run pixel checks</button><button id="loss">Lose / restore context</button>
+<details><summary>State and measurements</summary><pre id="state"></pre></details><p id="results" role="status"></p>
+</aside>
+<script type="module" src="./sky-study.js"></script>
+</html>

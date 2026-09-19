@@ -92,7 +92,10 @@ function updateLabels(){
   if($('#scene-announcement').textContent!==announcement)$('#scene-announcement').textContent=announcement;
 }
 function frame(timestamp){
-  requestAnimationFrame(frame);if(document.hidden||timestamp-lastRender<1000/30)return;lastRender=timestamp;
+  requestAnimationFrame(frame);if(document.hidden||timestamp-lastRender<1000/30)return;
+  // Retain the fractional interval so 60 Hz timestamp rounding cannot turn the
+  // 30 fps cap into a recurring three-refresh (20 fps) schedule.
+  lastRender=timestamp-(timestamp-lastRender)%(1000/30);
   if(snapshot){const result=painter.render(pausedSnapshot??snapshot,now(),study);if(result)audio.update(result.calendar.light,result.weather.rain);}
   if(timestamp-lastLabels>4000){lastLabels=timestamp;updateLabels();}
 }
@@ -102,9 +105,13 @@ $('#world').addEventListener('pointermove',e=>{if(dragging){painter.panBy(e.clie
 $('#world').addEventListener('pointerup',()=>dragging=false);$('#world').addEventListener('pointercancel',()=>dragging=false);
 document.addEventListener('visibilitychange',()=>{audio.visibility().catch(error=>console.warn('Audio visibility update failed',error));if(!document.hidden)refresh().catch(()=>{connection='reconnecting';updateLabels();});});
 
+// Displayed conditions can select the fallback while optional sky assets load.
+requestAnimationFrame(frame);
 try{await Promise.all([painter.init(),refresh()]);}catch(error){console.error(error);toast('The painting is here. Reconnecting to the world…');}
 const stream=new EventSource('/api/stream');
 stream.onmessage=event=>{try{client.accept(JSON.parse(event.data));}catch(error){console.error('Invalid world update',error);}};
 stream.onerror=()=>{connection='reconnecting';updateLabels();wake();};
 setInterval(()=>{if(!document.hidden)client.recover(connection!=='live').catch(()=>{connection='reconnecting';updateLabels();});},1000);
-requestAnimationFrame(frame);wake();
+wake();
+// A bfcache suspension keeps the renderer; permanent navigation releases it.
+addEventListener('pagehide',event=>{if(!event.persisted)painter.dispose();});

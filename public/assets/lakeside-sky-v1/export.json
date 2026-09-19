@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "width": 1672,
+  "height": 941,
+  "alpha": "straight PNG; premultiplied on WebGL upload",
+  "atlas": [
+    2048,
+    1024
+  ],
+  "gutters": 4,
+  "registration": "canonical daytime geometry with 8px low-frequency night illumination transfer; original night window interiors"
+}
