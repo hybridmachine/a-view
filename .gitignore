@@ -1,0 +1,11 @@
+data/*
+!data/.gitkeep
+node_modules/
+.DS_Store
+coverage/
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
