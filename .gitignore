@@ -9,3 +9,9 @@ coverage/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+# Regenerable full-resolution QA matrix; retain representative review frames.
+docs/sky-validation/*.png
+!docs/sky-validation/baseline-night.png
+!docs/sky-validation/day-clouds.png
+!docs/sky-validation/crossing-160.png
+!docs/sky-validation/portrait-dpr2.png
