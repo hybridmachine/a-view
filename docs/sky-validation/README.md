@@ -13,6 +13,8 @@ Validation on September 18–19, 2026, using an isolated temporary SQLite databa
 
 Detailed machine-readable results: [browser-results.json](browser-results.json), [display-results.json](display-results.json), and [baseline.json](baseline.json).
 
+PR review follow-up, September 19: syntax checks and all 30 Node tests passed. All 17 shader assertions, an inactive-uniform override check, and all 12 display checks passed with both default GPU selection and explicit Metal. The pause screenshot comparison now waits for a paused draw and hides interface overlays; connection status and toast pixels can change independently of the frozen painting. The action-boundary check uses a 1 ns tolerance, well below the 1 ms boundary it validates.
+
 ## Visual inspection
 
 Inspected 1920 × 1080, 1440 × 900, and 390 × 844 viewports, both pan extremes, and device pixel ratios 1 and 2 (rendering remains capped at 1.6). Inspected clear/thin/dense night, daytime overcast, dawn, dusk, oak and horizon, and a fixed full moon crossing. Native-resolution and enlarged oak/ridge crops were examined over black, white, magenta and replacement skies. Contact sheets include light values 0, .25, .5, .75 and 1.
@@ -61,10 +63,10 @@ Optional development dependencies are `sharp` and `playwright`; they are not run
 ```sh
 node scripts/prepare-sky-assets.mjs
 SKY_GPU=metal SKY_LONG_CHECK=1 node scripts/check-sky-browser.mjs
-node scripts/check-sky-display.mjs
+SKY_GPU=metal node scripts/check-sky-display.mjs
 ```
 
-`BROWSER_EXECUTABLE` can select an installed Chromium binary. `SKY_PREVIEW_URL` overrides the default local port. Omit `SKY_GPU=metal` on non-macOS hosts; it requests the host Metal renderer for the macOS benchmark. The display check uses the same Metal flags on this host.
+`BROWSER_EXECUTABLE` can select an installed Chromium binary. `SKY_PREVIEW_URL` overrides the default local port. Both browser checks use Playwright's default GPU selection unless `SKY_GPU=metal` is set explicitly. Omit that option on non-macOS hosts; it requests the host Metal renderer for the macOS benchmark.
 
 ## Remaining external validation and approximation limits
 

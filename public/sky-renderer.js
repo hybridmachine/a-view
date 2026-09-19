@@ -154,6 +154,7 @@ export class SkyRenderer {
   location(name){if(!this.locations.has(name))this.locations.set(name,this.gl.getUniformLocation(this.program,name));return this.locations.get(name);}
   uniform(name,value){
     const gl=this.gl,location=this.location(name);
+    if(location===null)return;
     if(Array.isArray(value)||ArrayBuffer.isView(value))gl[`uniform${value.length}fv`](location,value);else gl.uniform1f(location,value);
   }
   upload(image, update=true) {
