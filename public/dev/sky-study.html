@@ -10,7 +10,11 @@ aside{position:fixed;top:14px;left:14px;width:290px;max-height:calc(100vh - 28px
 <aside><h1>Sky study</h1><p>Fixed inputs, no persisted world changes. Drag the painting to pan. H hides controls.</p>
 <label>Fixture <select id="fixture"></select></label>
 <label>Elapsed real seconds <input id="time" type="number" value="1000" step="10"></label>
-<label>Cloud motion seconds <input id="motion" type="number" value="1000" step="10"></label>
+<label>Motion seconds <input id="motion" type="number" value="1000" step="10"></label>
+<label>Foliage breeze <select id="foliageWind"><option value="">Shared weather</option><option value="0">Calm / rest</option><option value="0.28">Normal breeze</option><option value="0.8">Stronger gust</option></select></label>
+<label><input id="foliageRest" type="checkbox"> Hold foliage at rest</label>
+<label><input id="foliagePilot" type="checkbox"> Pilot: one leaf cluster and one grass tuft</label>
+<label><input id="foliageGuides" type="checkbox"> Show foliage patches and attachments</label>
 <label>Cloud cover <input id="cover" type="range" min="0" max="1" value=".4" step=".01"></label>
 <label>Fixed world hour <input id="hour" type="range" min="0" max="24" value="0" step=".1"></label>
 <label>Inspect <select id="debug"><option value="0">Completed scene</option><option value="1">Foreground alpha</option><option value="2">Distant cloud alpha</option><option value="3">Near cloud alpha</option><option value="4">Combined transmission</option><option value="5">Sky before foreground</option></select></label>

@@ -1,6 +1,7 @@
 import { Painting } from '../painting.js';
 import { SkyRenderer } from '../sky-renderer.js';
 import { calendar, realTime, SCENES, viewConditions } from '/shared/world.js';
+import { runFoliagePixelChecks } from './foliage-checks.js';
 
 const $=id=>document.getElementById(id);
 export const fixtures={
@@ -12,11 +13,15 @@ export const fixtures={
   'Dawn':{hour:4.5,cover:.35,motion:1000},
   'Dusk':{hour:19.5,cover:.35,motion:1000},
   'Oak and horizon':{hour:15.5,cover:.45,motion:1000},
+  'Foliage pilot':{hour:15.5,cover:.18,motion:12,foliageWind:.53,foliagePilot:true},
+  'Foliage calm':{hour:15.5,cover:.18,motion:12,foliageWind:0},
+  'Foliage breeze':{hour:15.5,cover:.18,motion:12,foliageWind:.28},
+  'Foliage gust':{hour:15.5,cover:.18,motion:12,foliageWind:.8},
 };
 for(const name of Object.keys(fixtures))$('fixture').add(new Option(name,name));
 const painter=new Painting($('painting'),$('life'));
 const snapshot={world:{epoch:0,nest:{materials:6},action:null}};
-const state={hour:0,cover:0,time:1000,motion:1000,moonX:.78,moonY:.16,debug:0,fixed:true,far:true,near:true,rain:0,playing:false};
+const state={hour:0,cover:0,time:1000,motion:1000,moonX:.78,moonY:.16,debug:0,fixed:true,far:true,near:true,rain:0,playing:false,foliageWind:null,foliageRest:false,foliagePilot:false,foliageGuides:false};
 let lastFrame=0,lastMotionFrame=0,lastUpdate=0;
 function conditions(){
   const c=calendar(0,realTime(0,135*86400000+state.hour*3600000));
@@ -25,17 +30,28 @@ function conditions(){
 }
 function render(){
   painter.render(snapshot,state.time*1000,'preview',{conditions:conditions(),realSeconds:state.time,motionSeconds:state.motion,
-    moon:state.fixed?{x:state.moonX,y:state.moonY,phase:.5,visible:true}:null,debug:state.debug,visibleLayers:[+state.far,+state.near]});
+    moon:state.fixed?{x:state.moonX,y:state.moonY,phase:.5,visible:true}:null,debug:state.debug,visibleLayers:[+state.far,+state.near],
+    foliageWind:state.foliageWind,foliageRest:state.foliageRest,foliageOnly:state.foliagePilot?['oak-east','grass-shore-west']:null});
+  if(state.foliageGuides){
+    const ctx=painter.ctx;ctx.save();ctx.strokeStyle='#ffe4a0';ctx.fillStyle='#ffe4a0';ctx.font='12px system-ui';
+    for(const p of painter.scene.foliage.patches){
+      const [x,y,w,h]=p.bounds,[sx,sy]=painter.point(x/painter.scene.width,y/painter.scene.height);
+      ctx.strokeRect(sx,sy,w*painter.scale,h*painter.scale);ctx.fillText(p.id,sx,sy-4);
+      ctx.beginPath();ctx.arc(sx+w*p.anchor[0]*painter.scale,sy+h*p.anchor[1]*painter.scale,3,0,Math.PI*2);ctx.fill();
+    }ctx.restore();
+  }
 }
 function sync(){
   for(const name of ['hour','cover','time','motion','moonX','moonY','debug'])$(name).value=state[name];
-  for(const name of ['fixed','far','near'])$(name).checked=state[name];
+  for(const name of ['fixed','far','near','foliageRest','foliagePilot','foliageGuides'])$(name).checked=state[name];
+  $('foliageWind').value=state.foliageWind??'';
   render();
 }
-function fixture(name){Object.assign(state,fixtures[name],{time:1000,rain:name==='Daytime overcast'?.7:0,moonX:.78,moonY:.16});sync();}
+function fixture(name){Object.assign(state,{foliageWind:null,foliageRest:false,foliagePilot:false},fixtures[name],{time:1000,rain:name==='Daytime overcast'?.7:0,moonX:.78,moonY:.16});sync();}
 $('fixture').onchange=()=>fixture($('fixture').value);
 for(const name of ['hour','cover','time','motion','moonX','moonY','debug'])$(name).oninput=()=>{state[name]=+$(name).value;render();};
-for(const name of ['fixed','far','near'])$(name).oninput=()=>{state[name]=$(name).checked;render();};
+for(const name of ['fixed','far','near','foliageRest','foliagePilot','foliageGuides'])$(name).oninput=()=>{state[name]=$(name).checked;render();};
+$('foliageWind').oninput=()=>{state.foliageWind=$('foliageWind').value===''?null:+$('foliageWind').value;render();};
 $('play').onclick=()=>{state.playing=!state.playing;$('play').textContent=state.playing?'Pause crossing':'Play crossing';};
 $('loss').onclick=()=>{const extension=painter.gl?.getExtension('WEBGL_lose_context');if(extension){extension.loseContext();setTimeout(()=>extension.restoreContext(),1500);}};
 let drag=null;
@@ -49,7 +65,7 @@ function frame(timestamp){
   lastMotionFrame=timestamp;lastFrame=timestamp-(timestamp-lastFrame)%(1000/30);render();
   window.skyStudy?.onFrame?.(timestamp);
   if(timestamp-lastUpdate>1000){lastUpdate=timestamp;$('state').textContent=JSON.stringify({version:1,...state,ready:painter.ready,failure:painter.failure,
-    layers:painter.cloudState,stats:painter.renderer?.stats},null,2);}
+    layers:painter.cloudState,stats:painter.renderer?.stats,foliageFailure:painter.foliageFailure,foliage:painter.foliageState,foliageStats:painter.foliageRenderer?.stats},null,2);}
 }
 await painter.init();fixture('Clear night');requestAnimationFrame(frame);
 addEventListener('pagehide',()=>painter.dispose(),{once:true});
@@ -95,9 +111,9 @@ export function runPixelChecks(){
   return output;
 }
 $('tests').onclick=()=>{
-  const results=runPixelChecks();$('results').className=results.every(x=>x.pass)?'pass':'fail';
+  const results=[...runPixelChecks(),...runFoliagePixelChecks()];$('results').className=results.every(x=>x.pass)?'pass':'fail';
   $('results').textContent=results.map(x=>`${x.pass?'PASS':'FAIL'} ${x.name}`).join('\n');
 };
 
 // Deliberately preview-only; the visitor page exposes no renderer controls.
-window.skyStudy={painter,state,fixture,render,sync,runPixelChecks,conditions,ready:true};
+window.skyStudy={painter,state,fixture,render,sync,runPixelChecks,runFoliagePixelChecks,conditions,ready:true};

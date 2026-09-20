@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "width": 1672,
+  "height": 941,
+  "atlas": [
+    512,
+    512
+  ],
+  "patches": 10,
+  "alpha": "straight PNG; premultiplied once on upload",
+  "restMaxError": 0.4941176470588289,
+  "restMeanError": 0.0007610815709653292
+}
