@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "width": 1672,
+  "height": 941,
+  "atlas": [
+    512,
+    512
+  ],
+  "patches": 10,
+  "alpha": "straight PNG; premultiplied once on upload",
+  "restMaxError": 0.4941176470588289,
+  "restMeanError": 0.0007610815709653477,
+  "rest": {
+    "day": {
+      "maxError": 0.4941176470588289,
+      "meanError": 0.0007610815709653477,
+      "maxAlphaError": 0.4745098039215634
+    },
+    "night": {
+      "maxError": 0.49019607843137436,
+      "meanError": 0.0006732447867065632,
+      "maxAlphaError": 0.4745098039215634
+    }
+  }
+}

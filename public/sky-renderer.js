@@ -48,10 +48,6 @@ void main(){
   vec4 original=texture2D(dayImage,uv);
   vec2 delta=vec2(water*sin(uv.y*240.+seconds*.72)*sin(uv.x*58.+seconds*.28)*.00065,
     water*sin(uv.y*170.-seconds*.55)*.00025);
-  float canopy=(1.-smoothstep(.40,.55,uv.x))*(1.-smoothstep(.27,.39,uv.y));
-  float grass=smoothstep(.79,.98,uv.y)*(1.-smoothstep(.45,.58,uv.x));
-  float green=smoothstep(.025,.12,original.g-original.b)*(1.-smoothstep(.65,.8,original.r));
-  delta.x+=(canopy+grass)*green*sin(seconds*1.1+uv.x*55.+uv.y*12.)*.00037*wind;
   delta*=effects;
   vec2 sampleUv=uv;
   if(original.a>=.999 && dot(delta,delta)>0.){
@@ -152,6 +148,9 @@ export class SkyRenderer {
     } catch(error) { this.dispose();throw error; }
   }
   location(name){if(!this.locations.has(name))this.locations.set(name,this.gl.getUniformLocation(this.program,name));return this.locations.get(name);}
+  replaceForeground(images){
+    images.forEach((image,index)=>{this.gl.activeTexture(this.gl.TEXTURE0+index);this.gl.bindTexture(this.gl.TEXTURE_2D,this.textures[index]);this.upload(image);});
+  }
   uniform(name,value){
     const gl=this.gl,location=this.location(name);
     if(location===null)return;

@@ -19,6 +19,7 @@ await page.addInitScript(()=>{
 });
 try{
   await page.goto(`${base}/dev/sky-study.html`);await page.waitForFunction(()=>window.skyStudy?.ready);
+  await page.evaluate(async()=>{await skyStudy.painter.foliageTask;skyStudy.render();});
   const results=await page.evaluate(()=>window.skyStudy.runPixelChecks());
   const state=await page.evaluate(()=>({ready:skyStudy.painter.ready,failure:skyStudy.painter.failure}));
   console.log(`Shader checks: ${results.filter(x=>x.pass).length}/${results.length}; dynamic sky: ${state.ready}`);
@@ -37,6 +38,7 @@ try{
     record('Lost-context fallback follows night conditions',await page.evaluate(()=>document.querySelector('#fallback').getAttribute('src').endsWith('lakeside-night.png')));
     await page.evaluate(()=>lossExtension.restoreContext());
     await page.waitForFunction(()=>skyStudy.painter.ready&&document.querySelector('#painting').style.visibility==='visible');
+    await page.evaluate(async()=>{await skyStudy.painter.foliageTask;skyStudy.render();});
     const counts=await page.evaluate(()=>({...gpuResources}));record(`Restoration ${i+1} releases old resources`,JSON.stringify(counts)===JSON.stringify(retained),counts);
   }
   const display=await page.evaluate(async()=>{

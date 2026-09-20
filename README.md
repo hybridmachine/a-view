@@ -35,6 +35,7 @@ HTTP redirects to HTTPS; Caddy obtains and renews certificates automatically. Se
 - Full-viewport daytime and nighttime oil paintings, with subtle GPU water/foliage movement and authored night illumination.
 - Server-authoritative calendar: exactly 365 world days per 30 elapsed real days. Daylight varies seasonally at a fictional latitude of 49° north.
 - Stable shared weather and two moving painted cloud layers. Moonlight and stars pass behind clouds, hills, and oak leaf gaps. Rain, smoke, reeds, and birds use the same displayed real time.
+- Selective wind motion in six painted grass tufts and four oak leaf clusters, with fixed attachments, shared passing gusts, and restrained leaf flutter.
 - One persisted nest-building study: a bird collects strands and delivers them before material is added. Its action position agrees across visitors. Nine deliveries complete the initial nest; there is no fabricated subsequent breeding cycle.
 - Transactional SQLite state and event records. Catch-up after downtime produces the same nesting result as continuous execution.
 - Field notes derived from committed events, local follows, opt-in synthesized sound, fullscreen where supported, and a local pause that does not stop the world.
@@ -57,9 +58,19 @@ The unlinked developer preview is [http://127.0.0.1:4174/dev/sky-study.html](htt
 A_VIEW_DB="$(mktemp -d)/world.sqlite" PORT=4174 npm start
 ```
 
+Open that HTTP address in the browser while the server is running. Opening `public/dev/sky-study.html` directly as a `file://` page cannot load the application's modules. With a regular `npm start`, use port 4173 instead.
+
 The preview provides independent elapsed time, motion time, calendar hour, cloud cover, fixed moon pose, layer visibility, alpha/transmission inspection, context-loss simulation, and production-shader pixel checks. Press **H** to hide its controls. It never writes fixture inputs to the world.
 
 `scripts/check-sky-browser.mjs` automates shader, lifecycle, fallback, viewport, and performance checks using optional development-only Playwright. `scripts/check-sky-display.mjs` exercises visitor controls and clock boundaries. Set `SKY_PREVIEW_URL` for a different local port, `BROWSER_EXECUTABLE` for an existing Chromium binary, and `SKY_LONG_CHECK=1` for a one-minute crossing. The asset exporter uses optional development-only Sharp; neither package is a runtime dependency. See [verification results](docs/sky-validation/README.md) for measurements and remaining physical-device validation.
+
+## Foliage wind
+
+Ten authored patches bend on small meshes while their brush texture stays attached. The base painting contains repaired backgrounds beneath those patches; moving leaf coverage reveals the sky behind it. Trunks, main branches, rocks, the cottage, and most vegetation stay fixed. Motion is sampled directly from shared elapsed real time, with stable variation between patches and a common passing breeze. Reduced motion holds the entire pose, including wind amplitude, while lighting can change.
+
+Foliage uses a separate two-texture WebGL pass. The dynamic sky starts with the intact foreground as soon as its own assets are ready, independently of foliage loading. Once validated, the repaired base and moving foliage activate together in a complete frame. An invalid or missing foliage bundle retains the intact dynamic sky; a draw failure restores it with the same selected sky layers. The original full paintings remain the WebGL/sky fallback. General bird/branch depth ordering and moving foliage shadows remain outside this version.
+
+The existing `/dev/sky-study.html` preview includes calm, breeze, gust, and two-subject pilot fixtures, a rest-pose control, patch/attachment guides, and production foliage pixel checks. `scripts/prepare-foliage-assets.mjs` reproducibly exports the registered layers using optional Sharp; `scripts/check-foliage-browser.mjs` runs optional Playwright validation with the same environment options as the sky suite. See [foliage validation](docs/foliage-validation/README.md) and [artwork provenance](ARTWORK.md).
 
 ## Scope and honest limits
 
@@ -77,6 +88,8 @@ The world is shared by browsers connected to the same server. The application bi
 - `public/painting.js`: WebGL art rendering and lightweight Canvas animation.
 - `shared/wind.js` and `shared/sky.js`: pure wind integration, deterministic cloud state, and celestial pose.
 - `public/sky-renderer.js`: premultiplied sky composition, validated assets, cached celestial uploads, and GPU resource ownership.
+- `shared/foliage.js` and `shared/lakeside-foliage.js`: deterministic breeze sampling, anchored mesh weights, and the authored patch layout.
+- `public/foliage-renderer.js`: validated foliage bundles, registered atlas blending, mesh rendering, and GPU resource cleanup.
 - `public/dev/sky-study.html`: isolated fixed-input preview and production-shader assertions.
 - `public/app.js`: timing synchronization, controls, field notes, and private preview state.
 - `public/world-client.js`: snapshot ordering, monotonic display time, action boundaries, and reconnect recovery.

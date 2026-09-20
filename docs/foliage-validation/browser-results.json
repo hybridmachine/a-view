@@ -1,0 +1,383 @@
+{
+  "results": [
+    {
+      "name": "Complete foliage bundle active",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "skyFailure": null,
+        "foliageFailure": null
+      }
+    },
+    {
+      "name": "Foliage alpha is premultiplied exactly once",
+      "pass": true,
+      "detail": {
+        "name": "Foliage alpha is premultiplied exactly once",
+        "actual": [
+          48,
+          112,
+          68
+        ],
+        "expected": [
+          48,
+          112,
+          68
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Root remains attached under a strong gust",
+      "pass": true,
+      "detail": {
+        "name": "Root remains attached under a strong gust",
+        "actual": [
+          48,
+          112,
+          68
+        ],
+        "expected": [
+          48,
+          112,
+          68
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Moving silhouette reveals the background",
+      "pass": true,
+      "detail": {
+        "name": "Moving silhouette reveals the background",
+        "pass": true
+      }
+    },
+    {
+      "name": "Night color follows the registered night atlas",
+      "pass": true,
+      "detail": {
+        "name": "Night color follows the registered night atlas",
+        "actual": [
+          26,
+          52,
+          88
+        ],
+        "expected": [
+          26,
+          52,
+          88
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Foliage uses scene crop and pan",
+      "pass": true,
+      "detail": {
+        "name": "Foliage uses scene crop and pan",
+        "actual": [
+          48,
+          112,
+          68
+        ],
+        "expected": [
+          48,
+          112,
+          68
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas padding does not produce a rectangle",
+      "pass": true,
+      "detail": {
+        "name": "Atlas padding does not produce a rectangle",
+        "actual": [
+          32,
+          64,
+          96
+        ],
+        "expected": [
+          32,
+          64,
+          96
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas top-left remains top-left",
+      "pass": true,
+      "detail": {
+        "name": "Atlas top-left remains top-left",
+        "actual": [
+          255,
+          0,
+          0
+        ],
+        "expected": [
+          255,
+          0,
+          0
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas top-right remains top-right",
+      "pass": true,
+      "detail": {
+        "name": "Atlas top-right remains top-right",
+        "actual": [
+          0,
+          255,
+          0
+        ],
+        "expected": [
+          0,
+          255,
+          0
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas bottom-left remains bottom-left",
+      "pass": true,
+      "detail": {
+        "name": "Atlas bottom-left remains bottom-left",
+        "actual": [
+          0,
+          0,
+          255
+        ],
+        "expected": [
+          0,
+          0,
+          255
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas bottom-right remains bottom-right",
+      "pass": true,
+      "detail": {
+        "name": "Atlas bottom-right remains bottom-right",
+        "actual": [
+          255,
+          255,
+          255
+        ],
+        "expected": [
+          255,
+          255,
+          255
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "No foliage WebGL errors",
+      "pass": true,
+      "detail": {
+        "name": "No foliage WebGL errors",
+        "actual": [
+          0
+        ],
+        "expected": [
+          0
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Only selected foliage changes",
+      "pass": true,
+      "detail": {
+        "inside": 41381,
+        "outside": 0
+      }
+    },
+    {
+      "name": "Foliage clock: pause",
+      "pass": true
+    },
+    {
+      "name": "Foliage clock: held",
+      "pass": true
+    },
+    {
+      "name": "Foliage clock: resumed",
+      "pass": true
+    },
+    {
+      "name": "Foliage clock: jump",
+      "pass": true
+    },
+    {
+      "name": "Reload reconstructs identical foliage",
+      "pass": true
+    },
+    {
+      "name": "Three context restores rebuild the complete foliage bundle",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (success)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Late foliage activates as a complete frame",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (failure)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Delayed foliage failure leaves the dynamic sky visible",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (dispose)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Stale foliage cannot attach after dispose",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (reinitialize)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Stale foliage cannot attach after reinitialize",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (context-loss)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Stale foliage cannot attach after context-loss",
+      "pass": true
+    },
+    {
+      "name": "Restoration loads fresh foliage after an obsolete pending request",
+      "pass": true
+    },
+    {
+      "name": "Missing base-day retains intact dynamic sky",
+      "pass": true
+    },
+    {
+      "name": "Missing base-night retains intact dynamic sky",
+      "pass": true
+    },
+    {
+      "name": "Missing foliage-day retains intact dynamic sky",
+      "pass": true
+    },
+    {
+      "name": "Missing foliage-night retains intact dynamic sky",
+      "pass": true
+    },
+    {
+      "name": "Invalid foliage-night dimensions or alpha retain dynamic sky",
+      "pass": true
+    },
+    {
+      "name": "Invalid base-night dimensions or alpha retain dynamic sky",
+      "pass": true
+    },
+    {
+      "name": "Invalid patch metadata retains intact dynamic sky",
+      "pass": true
+    },
+    {
+      "name": "Draw failure restores intact foreground before showing frame",
+      "pass": true
+    },
+    {
+      "name": "Fallback preserves disabled cloud layers in the failure frame",
+      "pass": true
+    },
+    {
+      "name": "Preview sustains its 30 fps target on this GPU",
+      "pass": true,
+      "detail": {
+        "frames": 299,
+        "medianInterval": 33.30000000000018,
+        "p95Interval": 33.400000000000546,
+        "stats": {
+          "patches": 10,
+          "vertices": 3600,
+          "staticUploads": 2
+        },
+        "submissionMs": {
+          "before": {
+            "median": 0.09999999403953552,
+            "p95": 0.19999998807907104
+          },
+          "after": {
+            "median": 0.09999999403953552,
+            "p95": 0.10000002384185791
+          }
+        },
+        "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      }
+    }
+  ],
+  "errors": [],
+  "performance": {
+    "frames": 299,
+    "medianInterval": 33.30000000000018,
+    "p95Interval": 33.400000000000546,
+    "stats": {
+      "patches": 10,
+      "vertices": 3600,
+      "staticUploads": 2
+    },
+    "submissionMs": {
+      "before": {
+        "median": 0.09999999403953552,
+        "p95": 0.19999998807907104
+      },
+      "after": {
+        "median": 0.09999999403953552,
+        "p95": 0.10000002384185791
+      }
+    },
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+  }
+}

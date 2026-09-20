@@ -15,3 +15,9 @@ docs/sky-validation/*.png
 !docs/sky-validation/day-clouds.png
 !docs/sky-validation/crossing-160.png
 !docs/sky-validation/portrait-dpr2.png
+# Regenerable foliage capture matrix; retain representative review frames.
+docs/foliage-validation/*.png
+!docs/foliage-validation/selections.png
+!docs/foliage-validation/foliage-gust.png
+!docs/foliage-validation/view-390-pan-0.png
+docs/foliage-validation/*.mp4
