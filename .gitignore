@@ -25,3 +25,10 @@ docs/weather-validation/*.png
 !docs/weather-validation/selections.png
 !docs/weather-validation/after-rain.png
 !docs/weather-validation/view-390.png
+
+docs/cottage-validation/*.png
+!docs/cottage-validation/cottage-dark.png
+!docs/cottage-validation/main-room.png
+!docs/cottage-validation/open-casement.png
+!docs/cottage-validation/portrait-390.png
+docs/cottage-validation/*.webm

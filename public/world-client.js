@@ -1,3 +1,5 @@
+import {validCottageState} from '../shared/cottage.js';
+
 async function fetchSnapshot() {
   const response = await fetch('/api/world', {
     cache: 'no-store',
@@ -5,6 +7,18 @@ async function fetchSnapshot() {
   });
   if (!response.ok) throw new Error('World is unavailable');
   return response.json();
+}
+
+const boundary=data=>Math.min(data.nextCommitAt??Infinity,data.world.action?.end??Infinity,data.world.cottage?.pending?.end??Infinity,data.world.cottage?.nextDecisionAt??Infinity);
+function validSnapshot(data){
+  if(!data?.world||!Number.isFinite(data.serverTime)||!Number.isFinite(data.validUntil)||data.validUntil<data.serverTime||!Number.isSafeInteger(data.world.revision)||data.world.revision<0)return false;
+  if(data.world.cottage&&!validCottageState(data.world.cottage))return false;
+  if(Object.hasOwn(data,'nextCommitAt')){
+    const expected=Math.min(data.world.action?.end??Infinity,data.world.cottage?.pending?.end??Infinity,data.world.cottage?.nextDecisionAt??Infinity);
+    if(data.nextCommitAt===null)return expected===Infinity;
+    if(!Number.isFinite(data.nextCommitAt)||data.nextCommitAt<=data.serverTime||data.nextCommitAt>expected)return false;
+  }
+  return boundary(data)>data.serverTime;
 }
 
 // One ordering and timing policy for both HTTP refreshes and streamed snapshots.
@@ -21,10 +35,12 @@ export class WorldClient {
   }
 
   accept(data) {
+    if(!validSnapshot(data))return false;
     const current = this.snapshot;
     if (current && (data.serverTime <= current.serverTime || data.world.revision < current.world.revision)) return false;
     // Preserve the last rendered instant when a newer response has more latency.
     if (current) this.now();
+    if(Math.min(data.validUntil,boundary(data)-1)<this.lastRendered)return false;
     this.snapshot = data;
     this.anchorPerformance = this.clock();
     this.onSnapshot(data);
@@ -37,9 +53,9 @@ export class WorldClient {
 
   now() {
     if (!this.snapshot) return 0;
-    // A delivery and its consequences must appear together. Wait just before
-    // completion until a committed snapshot contains the changed nest state.
-    const actionLimit = this.snapshot.world.action ? this.snapshot.world.action.end - 1 : Infinity;
+    // Hold just before any discrete boundary until a committed snapshot
+    // contains its effects, including newly accepted cottage tasks.
+    const actionLimit = boundary(this.snapshot)-1;
     this.lastRendered = Math.min(
       Math.max(this.lastRendered, this.estimatedNow()),
       this.snapshot.validUntil,
@@ -53,7 +69,7 @@ export class WorldClient {
   }
 
   needsRefresh() {
-    return this.isExpired() || Boolean(this.snapshot.world.action && this.estimatedNow() >= this.snapshot.world.action.end);
+    return this.isExpired() || this.estimatedNow() >= boundary(this.snapshot);
   }
 
   refresh() {

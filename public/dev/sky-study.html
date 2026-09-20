@@ -11,6 +11,9 @@ aside{position:fixed;top:14px;left:14px;width:290px;max-height:calc(100vh - 28px
 <p id="startup-message" role="status" hidden></p>
 <label>Fixture <select id="fixture"></select></label>
 <label>Surface memory <select id="surface"><option value="dry">Dry ground</option><option value="wet">After rain</option><option value="drying">Drying</option></select></label>
+<label>Main room light <input id="mainLight" type="range" min="0" max="1" step=".05" value="0"></label>
+<label>Second room light <input id="secondLight" type="range" min="0" max="1" step=".05" value="0"></label>
+<label>Casement opening <input id="opening" type="range" min="0" max="1" step=".05" value="0"></label>
 <label>Elapsed real seconds <input id="time" type="number" value="1000" step="10"></label>
 <label>Motion seconds <input id="motion" type="number" value="1000" step="10"></label>
 <label>Foliage breeze <select id="foliageWind"><option value="">Shared weather</option><option value="0">Calm / rest</option><option value="0.28">Normal breeze</option><option value="0.8">Stronger gust</option></select></label>

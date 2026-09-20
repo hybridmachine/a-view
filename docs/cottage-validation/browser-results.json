@@ -1,0 +1,192 @@
+[
+  {
+    "name": "Complete optional cottage bundle",
+    "pass": true
+  },
+  {
+    "name": "Both unlit rooms remove baked night emission",
+    "pass": true,
+    "detail": {
+      "bakedMain": 167.78571428571428,
+      "darkMain": 27.973544973544975,
+      "litMain": 144.9973544973545,
+      "bakedSecond": 161.016,
+      "darkSecond": 29.144,
+      "litSecond": 135.512,
+      "mainOutside": 0,
+      "secondOutside": 0,
+      "openingOutside": 0,
+      "openingInside": 554,
+      "both": 144.9973544973545
+    }
+  },
+  {
+    "name": "Room lights are independent and local",
+    "pass": true,
+    "detail": {
+      "bakedMain": 167.78571428571428,
+      "darkMain": 27.973544973544975,
+      "litMain": 144.9973544973545,
+      "bakedSecond": 161.016,
+      "darkSecond": 29.144,
+      "litSecond": 135.512,
+      "mainOutside": 0,
+      "secondOutside": 0,
+      "openingOutside": 0,
+      "openingInside": 554,
+      "both": 144.9973544973545
+    }
+  },
+  {
+    "name": "Casement reveals interior only inside its authored envelope",
+    "pass": true,
+    "detail": {
+      "bakedMain": 167.78571428571428,
+      "darkMain": 27.973544973544975,
+      "litMain": 144.9973544973545,
+      "bakedSecond": 161.016,
+      "darkSecond": 29.144,
+      "litSecond": 135.512,
+      "mainOutside": 0,
+      "secondOutside": 0,
+      "openingOutside": 0,
+      "openingInside": 554,
+      "both": 144.9973544973545
+    }
+  },
+  {
+    "name": "Lighting, weather, room, and casement matrix",
+    "pass": true,
+    "detail": {
+      "draws": 120,
+      "pass": true
+    }
+  },
+  {
+    "name": "Invalid hinge geometry or missing repair coverage rejects the whole bundle",
+    "pass": true
+  },
+  {
+    "name": "Cottage display: pause",
+    "pass": true
+  },
+  {
+    "name": "Cottage display: reduced",
+    "pass": true
+  },
+  {
+    "name": "Cottage display: study",
+    "pass": true
+  },
+  {
+    "name": "Cottage display: live",
+    "pass": true
+  },
+  {
+    "name": "Cottage display: hearth",
+    "pass": true
+  },
+  {
+    "name": "Cottage display: smokeReduced",
+    "pass": true
+  },
+  {
+    "name": "Context restoration rebuilds the complete cottage",
+    "pass": true
+  },
+  {
+    "name": "Cottage stays within 30 fps draw budget",
+    "pass": true,
+    "detail": {
+      "baseline": {
+        "median": 0.19999998807907104,
+        "p95": 0.5
+      },
+      "cottage": {
+        "median": 0.29999998211860657,
+        "p95": 0.5999999940395355
+      },
+      "textureBytes": 524288
+    }
+  },
+  {
+    "name": "Sky is independent of cottage load (missing)",
+    "pass": true
+  },
+  {
+    "name": "Complete cottage fallback (missing)",
+    "pass": true
+  },
+  {
+    "name": "Sky is independent of cottage load (corrupt)",
+    "pass": true
+  },
+  {
+    "name": "Complete cottage fallback (corrupt)",
+    "pass": true
+  },
+  {
+    "name": "Sky is independent of cottage load (dispose)",
+    "pass": true
+  },
+  {
+    "name": "Stale cottage load cannot attach after dispose",
+    "pass": true
+  },
+  {
+    "name": "Sky is independent of cottage load (reinitialize)",
+    "pass": true
+  },
+  {
+    "name": "Stale cottage load cannot attach after reinitialize",
+    "pass": true
+  },
+  {
+    "name": "Sky is independent of cottage load (context-loss)",
+    "pass": true
+  },
+  {
+    "name": "Stale cottage load cannot attach after context-loss",
+    "pass": true
+  },
+  {
+    "name": "Partial draw failure restores the base and surviving layers",
+    "pass": true
+  },
+  {
+    "name": "Accessible description identifies the static cottage fallback",
+    "pass": true
+  },
+  {
+    "name": "Paused cottage observation holds while a newer snapshot is accepted",
+    "pass": true
+  },
+  {
+    "name": "Resuming cottage observation rejoins the current shared room state",
+    "pass": true
+  },
+  {
+    "name": "Real-time committed casement and hearth recording",
+    "pass": true,
+    "detail": {
+      "action": {
+        "id": "cottage-v1-lakeside-resident-01-1",
+        "actor": "lakeside-resident-01",
+        "kind": "casement",
+        "target": 1,
+        "room": "main",
+        "from": 0,
+        "start": 1800000300000,
+        "motionStart": 1800000313748,
+        "end": 1800000317748
+      },
+      "durationMs": 20748,
+      "video": "routine.webm"
+    }
+  },
+  {
+    "name": "No page errors on any test page",
+    "pass": true,
+    "detail": []
+  }
+]

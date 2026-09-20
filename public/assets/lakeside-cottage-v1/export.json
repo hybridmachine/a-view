@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "atlas": [
+    256,
+    256
+  ],
+  "rooms": 2,
+  "casements": 1,
+  "alpha": "matching straight-alpha pair; premultiplied once on upload",
+  "interiorSource": "generated repair restricted to the main casement recess",
+  "geometry": "canonical registered daytime foreground"
+}

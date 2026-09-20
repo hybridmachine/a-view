@@ -1,6 +1,6 @@
 # Weather that leaves traces
 
-Status: implemented on `codex/weather-traces`, September 19–20, 2026; awaiting PR review. See [validation evidence](docs/weather-validation/README.md). The sections below retain the implementation design. This is the first priority in [the engagement plan](ENGAGEMENT_PLAN.md); [cottage life](COTTAGE_LIFE_IMPLEMENTATION_PLAN.md) follows it.
+Status: implemented and merged in [PR #5](https://github.com/hybridmachine/a-view/pull/5), September 20, 2026, after automated review and passing CI. Deployment awaits human review. See [validation evidence](docs/weather-validation/README.md). The sections below retain the implementation design. This is the first priority in [the engagement plan](ENGAGEMENT_PLAN.md); [cottage life](COTTAGE_LIFE_IMPLEMENTATION_PLAN.md) follows it.
 
 ## Intended experience and scope
 

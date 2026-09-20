@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Complete optional bundle",
+    "pass": true
+  },
+  {
+    "name": "Wetness changes only authored surfaces",
+    "pass": true,
+    "detail": {
+      "inside": 13808,
+      "outside": 0
+    }
+  },
+  {
+    "name": "No GL error after viewport changes",
+    "pass": true
+  },
+  {
+    "name": "Five illumination blends draw cleanly",
+    "pass": true
+  },
+  {
+    "name": "Weather rendering stays within 30 fps frame budget",
+    "pass": true,
+    "detail": {
+      "baseline": {
+        "median": 0.20000001788139343,
+        "p95": 0.30000001192092896
+      },
+      "enabled": {
+        "median": 0.30000001192092896,
+        "p95": 0.5
+      },
+      "textureBytes": 2097152
+    }
+  },
+  {
+    "name": "Display contract: pause",
+    "pass": true
+  },
+  {
+    "name": "Display contract: wet",
+    "pass": true
+  },
+  {
+    "name": "Display contract: restored",
+    "pass": true
+  },
+  {
+    "name": "Display contract: held",
+    "pass": true
+  },
+  {
+    "name": "Context restoration reconstructs the bundle",
+    "pass": true
+  },
+  {
+    "name": "Weather missing preserves sky and foliage",
+    "pass": true
+  },
+  {
+    "name": "Weather mismatch preserves sky and foliage",
+    "pass": true
+  },
+  {
+    "name": "Late assets cannot revive disposed renderer",
+    "pass": true
+  },
+  {
+    "name": "Environmental revisions keep field notes quiet",
+    "pass": true
+  },
+  {
+    "name": "Committed notes mark unread and opening notes clears it",
+    "pass": true
+  },
+  {
+    "name": "No page errors",
+    "pass": true,
+    "detail": []
+  }
+]
