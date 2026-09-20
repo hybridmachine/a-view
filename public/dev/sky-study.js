@@ -3,9 +3,16 @@ import { SkyRenderer } from '../sky-renderer.js';
 import { calendar, realTime, SCENES, viewConditions } from '/shared/world.js';
 import { runFoliagePixelChecks } from './foliage-checks.js';
 import {surfaceFixture} from '/shared/surface-weather.js';
+import {birdFixture} from '/shared/bird.js';
 
 const $=id=>document.getElementById(id);
 export const fixtures={
+  'Oak perch':{hour:15.5,cover:.18,bird:'Oak perch'},
+  'Sheltered bird':{hour:15.5,cover:.18,bird:'Sheltered bird'},
+  'Roof perch':{hour:15.5,cover:.18,bird:'Roof perch'},
+  'Oak flight':{hour:15.5,cover:.18,bird:'Oak flight'},
+  'Shelter flight':{hour:15.5,cover:.18,bird:'Shelter flight'},
+  'Roof flight':{hour:15.5,cover:.18,bird:'Roof flight'},
   'Cottage dark':{hour:0,cover:.18,motion:12},
   'Main room':{hour:0,cover:.18,motion:12,mainLight:1},
   'Second room':{hour:0,cover:.18,motion:12,secondLight:1},
@@ -31,6 +38,7 @@ for(const name of Object.keys(fixtures))$('fixture').add(new Option(name,name));
 const painter=new Painting($('painting'),$('life'));
 const snapshot={world:{epoch:0,nest:{materials:6},action:null}};
 const state={hour:0,cover:0,time:1000,motion:1000,moonX:.78,moonY:.16,debug:0,fixed:true,far:true,near:true,rain:0,playing:false,foliageWind:null,foliageRest:false,foliagePilot:false,foliageGuides:false,surface:'dry',mainLight:0,secondLight:0,opening:0};
+Object.assign(state,{bird:null,birdTime:0,birdGuides:false});
 let lastFrame=0,lastMotionFrame=0,lastUpdate=0;
 function conditions(){
   const c=calendar(0,realTime(0,135*86400000+state.hour*3600000));
@@ -40,6 +48,7 @@ function conditions(){
 function render(){
   painter.render(snapshot,state.time*1000,'preview',{conditions:conditions(),realSeconds:state.time,motionSeconds:state.motion,
     surface:surfaceFixture(state.surface),
+    bird:birdFixture(state.bird,state.birdTime*1000),
     cottagePose:{main:state.mainLight,second:state.secondLight,open:state.opening},
     moon:state.fixed?{x:state.moonX,y:state.moonY,phase:.5,visible:true}:null,debug:state.debug,visibleLayers:[+state.far,+state.near],
     foliageWind:state.foliageWind,foliageRest:state.foliageRest,foliageOnly:state.foliagePilot?['oak-east','grass-shore-west']:null});
@@ -51,6 +60,17 @@ function render(){
       ctx.beginPath();ctx.arc(sx+w*p.anchor[0]*painter.scale,sy+h*p.anchor[1]*painter.scale,3,0,Math.PI*2);ctx.fill();
     }ctx.restore();
   }
+  if(state.birdGuides){
+    const ctx=painter.ctx,art=painter.scene.birdLife,toScreen=p=>painter.point(p[0]/art.width,p[1]/art.height);
+    ctx.save();ctx.strokeStyle='#ffe4a0';ctx.fillStyle='#ffe4a0';ctx.lineWidth=1;ctx.font='12px system-ui';
+    for(const route of Object.values(art.routes)){
+      const p=route.points.map(toScreen);ctx.beginPath();ctx.moveTo(...p[0]);ctx.bezierCurveTo(...p[1],...p[2],...p[3]);ctx.stroke();
+    }
+    for(const [id,location]of Object.entries(art.locations)){
+      const [x,y]=toScreen(location.point);ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();ctx.fillText(id,x+6,y-8);
+    }
+    ctx.strokeStyle='#f9a4a4';ctx.beginPath();art.occluder.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](...toScreen(p)));ctx.closePath();ctx.stroke();ctx.restore();
+  }
 }
 function sync(){
   for(const name of ['hour','cover','time','motion','moonX','moonY','debug'])$(name).value=state[name];
@@ -58,15 +78,18 @@ function sync(){
   $('foliageWind').value=state.foliageWind??'';
   $('surface').value=state.surface;
   for(const name of ['mainLight','secondLight','opening'])$(name).value=state[name];
+  $('birdTime').value=state.birdTime;$('birdGuides').checked=state.birdGuides;
   render();
 }
-function fixture(name){Object.assign(state,{foliageWind:null,foliageRest:false,foliagePilot:false,surface:'dry',mainLight:0,secondLight:0,opening:0},fixtures[name],{time:1000,rain:name==='Daytime overcast'?.7:0,moonX:.78,moonY:.16});sync();}
+function fixture(name){Object.assign(state,{foliageWind:null,foliageRest:false,foliagePilot:false,surface:'dry',mainLight:0,secondLight:0,opening:0,bird:null,birdTime:0},fixtures[name],{time:1000,rain:name==='Daytime overcast'?.7:0,moonX:.78,moonY:.16});sync();}
 $('fixture').onchange=()=>fixture($('fixture').value);
 for(const name of ['hour','cover','time','motion','moonX','moonY','debug'])$(name).oninput=()=>{state[name]=+$(name).value;render();};
 for(const name of ['fixed','far','near','foliageRest','foliagePilot','foliageGuides'])$(name).oninput=()=>{state[name]=$(name).checked;render();};
 $('foliageWind').oninput=()=>{state.foliageWind=$('foliageWind').value===''?null:+$('foliageWind').value;render();};
 $('surface').oninput=()=>{state.surface=$('surface').value;render();};
 for(const name of ['mainLight','secondLight','opening'])$(name).oninput=()=>{state[name]=+$(name).value;render();};
+$('birdTime').oninput=()=>{state.birdTime=+$('birdTime').value;render();};
+$('birdGuides').oninput=()=>{state.birdGuides=$('birdGuides').checked;render();};
 $('play').onclick=()=>{state.playing=!state.playing;$('play').textContent=state.playing?'Pause crossing':'Play crossing';};
 $('loss').onclick=()=>{const extension=painter.gl?.getExtension('WEBGL_lose_context');if(extension){extension.loseContext();setTimeout(()=>extension.restoreContext(),1500);}};
 let drag=null;
@@ -76,7 +99,7 @@ $('world').onpointerup=$('world').onpointercancel=()=>{drag=null;};
 addEventListener('keydown',e=>{if(e.key.toLowerCase()==='h'&&!/input|select/i.test(e.target.tagName))document.querySelector('aside').classList.toggle('hidden');});
 function frame(timestamp){
   requestAnimationFrame(frame);if(document.hidden||timestamp-lastFrame<1000/30)return;
-  if(state.playing&&lastMotionFrame){const elapsed=Math.min(1,(timestamp-lastMotionFrame)/1000);state.time+=elapsed;state.motion+=elapsed;}
+  if(state.playing&&lastMotionFrame){const elapsed=Math.min(1,(timestamp-lastMotionFrame)/1000);state.time+=elapsed;state.motion+=elapsed;state.birdTime+=elapsed;}
   lastMotionFrame=timestamp;lastFrame=timestamp-(timestamp-lastFrame)%(1000/30);render();
   window.skyStudy?.onFrame?.(timestamp);
   if(timestamp-lastUpdate>1000){lastUpdate=timestamp;$('state').textContent=JSON.stringify({version:1,...state,ready:painter.ready,failure:painter.failure,

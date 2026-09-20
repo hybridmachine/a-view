@@ -83,3 +83,11 @@ Exports under `public/assets/lakeside-cottage-v1/` are a registered 256 × 256 d
 ### Interior repair edit prompt
 
 Use case: precise-object-edit. Edit target: this enlarged crop from a fine oil painting of a stone cottage. Asset purpose: a repaired dark interior beneath a moving painted window panel. Change ONLY the inside of the LEFT window: remove all glass sash and interior mullion bars, leaving a quiet dark unlit rectangular recess with subtle oil-brush texture. Retain the exact outer window frame, sill, lintel, vines, stones, door, right window, lighting, all proportions, and framing. No person or furniture visible inside. No new light, symbols, text or objects. Keep authentic low-resolution painted texture, no photorealistic detail. The opening must be dark muted green charcoal, subtly varied and not a flat black rectangle. This will be cropped only to the left window's interior; preserve everything else.
+
+## Familiar bird, version 1
+
+Prepared September 20, 2026. This release retains the original procedural Canvas bird silhouette and colors. No new generated images, recorded animal calls, image-processing dependency, or GPU textures were introduced. The day/night landscape and all optional painted bundles remain unchanged.
+
+`shared/lakeside-bird.js` records native-pixel nest, oak-perch, roof-perch, and shelter anchors, reversible cubic flight curves, continuous perspective scale, and an eight-point fixed-bark occluder. These routes avoid the moving foliage patches. `public/bird-renderer.js` draws only the small subject into a 96 × 96 scratch canvas, removes coverage hidden by the fixed trunk, then composites it with the painting's crop and pan transform. It never repairs or repaints scenery over another layer. The roof body anchor was lowered four native pixels after contact review so its feet meet the ridge.
+
+The voice reuses the existing synthesized three-note motif, now scheduled from the bird's committed shared action. It is an artistic sound study without a species attribution. [Route and perch evidence](docs/bird-validation/README.md) records the review and remaining device limits.

@@ -4,6 +4,7 @@ import { Ambience } from './sound.js';
 import { WorldClient } from './world-client.js';
 import { sceneText } from './scene-description.js';
 import {cottageDescription} from '/shared/cottage.js';
+import {birdDescription} from '/shared/bird.js';
 
 const $=selector=>document.querySelector(selector);
 const icons={
@@ -50,6 +51,7 @@ $('#sound-button').onclick=async()=>{
 };
 $('#pause-button').onclick=()=>{
   if(!snapshot)return;
+  audio.hold();
   if(pausedAt===null){pausedAt=now();pausedSnapshot=structuredClone(snapshot);}else{pausedAt=null;pausedSnapshot=null;}
   $('#pause-button').setAttribute('aria-pressed',String(pausedAt!==null));$('#pause-button').setAttribute('aria-label',pausedAt!==null?'Resume this view':'Pause this view');$('#pause-button').dataset.tip=pausedAt!==null?'Resume this view':'Pause this view';icon($('#pause-button .icon'),pausedAt!==null?'play':'pause');
   toast(pausedAt!==null?'Your view is paused. The world carries on.':'Back in the present.');updateLabels();wake();
@@ -57,7 +59,7 @@ $('#pause-button').onclick=()=>{
 if(!document.fullscreenEnabled)$('#fullscreen-button').hidden=true;
 $('#fullscreen-button').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{toast('Fullscreen is not available in this browser.');}};
 document.addEventListener('fullscreenchange',()=>{$('#fullscreen-button').setAttribute('aria-label',document.fullscreenElement?'Leave fullscreen':'Enter fullscreen');});
-document.querySelectorAll('[data-light]').forEach(button=>button.onclick=()=>{if(!snapshot)return;study=button.dataset.light;$('#about-dialog').close();document.querySelectorAll('[data-light]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));updateLabels();wake();});
+document.querySelectorAll('[data-light]').forEach(button=>button.onclick=()=>{if(!snapshot)return;audio.hold();study=button.dataset.light;$('#about-dialog').close();document.querySelectorAll('[data-light]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));updateLabels();wake();});
 $('#return-live').onclick=()=>{study=null;document.querySelectorAll('[data-light]').forEach(b=>b.setAttribute('aria-pressed','false'));if(pausedAt!==null)$('#pause-button').click();updateLabels();wake();};
 
 function accept(data){
@@ -73,7 +75,6 @@ function accept(data){
 function refresh(){return client.refresh();}
 function updateNotes(){
   if(!snapshot)return;
-  const nest=snapshot.world.nest;$('#nest-detail').textContent=nest.stage==='built'?'A woven shelter, ready for what comes next.':`${nest.materials} strands gathered. The work continues.`;
   const list=$('#event-list');list.replaceChildren();
   for(const event of snapshot.events){
     const li=document.createElement('li'),time=document.createElement('time'),text=document.createElement('p');
@@ -92,7 +93,10 @@ function updateLabels(){
   $('#live-dot').classList.toggle('offline',connection!=='live'||stale);$('#return-live').hidden=!study;
   if(stale)wake();
   $('#cottage-detail').textContent=cottageDescription(shownSnapshot.world.cottage)||'A quiet cottage beside the lake.';
-  const {description,announcement}=sceneText(shownSnapshot,now(),{study,paused:pausedAt!==null,disconnected:stale,staticCottage:!painter.cottageActive});
+  const nest=shownSnapshot.world.nest;
+  $('#nest-detail').textContent=nest.stage==='built'?'A completed nest rests in the oak.':`${nest.materials} strands gathered. The work continues.`;
+  $('#bird-detail').textContent=study?'The bird is omitted from this private light study.':birdDescription(shownSnapshot.world.bird,shownSnapshot.world.action,now(),{reducedMotion:!painter.motion,unavailable:!painter.birdRenderer.valid});
+  const {description,announcement}=sceneText(shownSnapshot,now(),{study,paused:pausedAt!==null,disconnected:stale,staticCottage:!painter.cottageActive,reducedMotion:!painter.motion,birdUnavailable:!painter.birdRenderer.valid});
   if($('#scene-description').textContent!==description)$('#scene-description').textContent=description;
   if($('#scene-announcement').textContent!==announcement)$('#scene-announcement').textContent=announcement;
 }
@@ -101,7 +105,12 @@ function frame(timestamp){
   // Retain the fractional interval so 60 Hz timestamp rounding cannot turn the
   // 30 fps cap into a recurring three-refresh (20 fps) schedule.
   lastRender=timestamp-(timestamp-lastRender)%(1000/30);
-  if(snapshot){const result=painter.render(pausedSnapshot??snapshot,now(),study);if(result)audio.update(result.calendar.light,result.weather.rain);}
+  if(snapshot){
+    const displayedNow=now(),shown=pausedSnapshot??snapshot,result=painter.render(shown,displayedNow,study);
+    if(result)audio.update(result.calendar.light,result.weather.rain,{bird:shown.world.bird,now:displayedNow,
+      active:pausedAt===null&&!study&&!client.needsRefresh()&&painter.birdActive,
+      validUntil:Math.min(shown.validUntil,shown.nextCommitAt??Infinity)});
+  }
   if(timestamp-lastLabels>4000){lastLabels=timestamp;updateLabels();}
 }
 let dragging=false,previousX=0;

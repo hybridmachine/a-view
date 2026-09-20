@@ -117,6 +117,7 @@ try{
   const pausedVisitor=await page(),seed=await (await pausedVisitor.request.get(`${base}/api/world`)).json();
   const nextDecisionAt=seed.world.cottage.introducedAt+(Math.ceil((seed.serverTime-seed.world.cottage.introducedAt)/30_000)+10)*30_000;
   seed.nextCommitAt=nextDecisionAt;seed.validUntil=nextDecisionAt;seed.world.action=null;
+  if(seed.world.bird)seed.world.bird.nextDecisionAt=seed.world.bird.introducedAt+Math.ceil((nextDecisionAt-seed.world.bird.introducedAt)/30_000)*30_000;
   Object.assign(seed.world.cottage,{pending:null,nextDecisionAt,rooms:{main:false,second:false}});
   let response=structuredClone(seed);
   await pausedVisitor.route('**/api/world',route=>route.fulfill({json:response}));await pausedVisitor.route('**/api/stream',route=>route.abort());

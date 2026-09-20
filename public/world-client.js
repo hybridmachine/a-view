@@ -1,4 +1,5 @@
 import {validCottageState} from '../shared/cottage.js';
+import {validBirdState,birdBoundary} from '../shared/bird.js';
 
 async function fetchSnapshot() {
   const response = await fetch('/api/world', {
@@ -9,12 +10,15 @@ async function fetchSnapshot() {
   return response.json();
 }
 
-const boundary=data=>Math.min(data.nextCommitAt??Infinity,data.world.action?.end??Infinity,data.world.cottage?.pending?.end??Infinity,data.world.cottage?.nextDecisionAt??Infinity);
+const expectedBoundary=data=>Math.min(data.world.action?.end??Infinity,birdBoundary(data.world.bird),data.world.cottage?.pending?.end??Infinity,data.world.cottage?.nextDecisionAt??Infinity);
+const boundary=data=>Math.min(data.nextCommitAt??Infinity,expectedBoundary(data));
 function validSnapshot(data){
   if(!data?.world||!Number.isFinite(data.serverTime)||!Number.isFinite(data.validUntil)||data.validUntil<data.serverTime||!Number.isSafeInteger(data.world.revision)||data.world.revision<0)return false;
   if(data.world.cottage&&!validCottageState(data.world.cottage))return false;
+  if((data.world.version>=4||data.world.bird)&&!validBirdState(data.world.bird))return false;
+  if(data.world.bird?.mode==='routine'&&(data.world.action||data.world.nest?.stage!=='built'))return false;
   if(Object.hasOwn(data,'nextCommitAt')){
-    const expected=Math.min(data.world.action?.end??Infinity,data.world.cottage?.pending?.end??Infinity,data.world.cottage?.nextDecisionAt??Infinity);
+    const expected=expectedBoundary(data);
     if(data.nextCommitAt===null)return expected===Infinity;
     if(!Number.isFinite(data.nextCommitAt)||data.nextCommitAt<=data.serverTime||data.nextCommitAt>expected)return false;
   }
