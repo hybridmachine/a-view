@@ -59,6 +59,7 @@ export class WorldStore {
       };
       const insertEvent=this.db.prepare('INSERT INTO events(id,at,type,text,payload,noteVisible) VALUES (?,?,?,?,?,?)');
       const record=event=>insertEvent.run(event.id,event.at,event.type,event.text,JSON.stringify(event.payload),event.noteVisible);
+      let insertDelivery;
       // Canonical ties: environment, nest delivery, bird/cottage completion,
       // bird/cottage decision. No subsystem runs ahead during catch-up.
       while (nextCommitAt(state)<=target && processed<MAX_WORLD_BOUNDARIES) {
@@ -66,7 +67,8 @@ export class WorldStore {
         if(state.action&&state.action.end===at){
           const action = state.action;
           state.nest.materials += 1;
-          this.db.prepare('INSERT OR IGNORE INTO events(id,at,type,text) VALUES (?,?,?,?)').run(action.id, action.end, 'nest.material-delivered', state.nest.materials === 12 ? 'The last strand is tucked into place. The nest is ready.' : 'A bird returned to the oak with another strand for its nest.');
+          insertDelivery??=this.db.prepare('INSERT OR IGNORE INTO events(id,at,type,text) VALUES (?,?,?,?)');
+          insertDelivery.run(action.id, action.end, 'nest.material-delivered', state.nest.materials === 12 ? 'The last strand is tucked into place. The nest is ready.' : 'A bird returned to the oak with another strand for its nest.');
           if (state.nest.materials >= 12) {
             state.nest.stage = 'built'; state.action = null;
           } else {
