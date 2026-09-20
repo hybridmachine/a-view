@@ -58,6 +58,8 @@ The unlinked developer preview is [http://127.0.0.1:4174/dev/sky-study.html](htt
 A_VIEW_DB="$(mktemp -d)/world.sqlite" PORT=4174 npm start
 ```
 
+Open that HTTP address in the browser while the server is running. Opening `public/dev/sky-study.html` directly as a `file://` page cannot load the application's modules. With a regular `npm start`, use port 4173 instead.
+
 The preview provides independent elapsed time, motion time, calendar hour, cloud cover, fixed moon pose, layer visibility, alpha/transmission inspection, context-loss simulation, and production-shader pixel checks. Press **H** to hide its controls. It never writes fixture inputs to the world.
 
 `scripts/check-sky-browser.mjs` automates shader, lifecycle, fallback, viewport, and performance checks using optional development-only Playwright. `scripts/check-sky-display.mjs` exercises visitor controls and clock boundaries. Set `SKY_PREVIEW_URL` for a different local port, `BROWSER_EXECUTABLE` for an existing Chromium binary, and `SKY_LONG_CHECK=1` for a one-minute crossing. The asset exporter uses optional development-only Sharp; neither package is a runtime dependency. See [verification results](docs/sky-validation/README.md) for measurements and remaining physical-device validation.

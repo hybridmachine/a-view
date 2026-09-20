@@ -6,8 +6,9 @@
 *{box-sizing:border-box}body{margin:0;background:#14221e;color:#f4f1e7;font:13px system-ui}#world{position:fixed;inset:0}#world canvas,#fallback{position:absolute;width:100%;height:100%;inset:0}#fallback{object-fit:cover}#painting{opacity:0}#painting.ready{opacity:1}#life{pointer-events:none}
 aside{position:fixed;top:14px;left:14px;width:290px;max-height:calc(100vh - 28px);overflow:auto;padding:18px;background:#172620ed;border:1px solid #ffffff30;border-radius:8px}h1{font:25px Georgia;margin:0 0 6px}p{line-height:1.5;color:#c8d3c5}label{display:block;margin:10px 0}input,select,button{font:inherit;accent-color:#d6dbb4}input[type=number],select{width:100%;padding:5px}input[type=range]{width:100%}button{padding:6px 10px;margin:4px 3px 4px 0;cursor:pointer}pre{font:11px monospace;white-space:pre-wrap;overflow-wrap:anywhere}details{margin-top:12px}#results{white-space:pre-wrap}.pass{color:#bedaa8}.fail{color:#ffbaae}aside.hidden{display:none}
 </style>
-<div id="world"><img id="fallback" src="/assets/lakeside-day.png" alt="Lakeside painting"><canvas id="painting"></canvas><canvas id="life"></canvas></div>
+<div id="world"><img id="fallback" src="../assets/lakeside-day.png" alt="Lakeside painting"><canvas id="painting"></canvas><canvas id="life"></canvas></div>
 <aside><h1>Sky study</h1><p>Fixed inputs, no persisted world changes. Drag the painting to pan. H hides controls.</p>
+<p id="startup-message" role="status" hidden></p>
 <label>Fixture <select id="fixture"></select></label>
 <label>Elapsed real seconds <input id="time" type="number" value="1000" step="10"></label>
 <label>Motion seconds <input id="motion" type="number" value="1000" step="10"></label>
@@ -25,5 +26,18 @@ aside{position:fixed;top:14px;left:14px;width:290px;max-height:calc(100vh - 28px
 <button id="play">Play crossing</button><button id="tests">Run pixel checks</button><button id="loss">Lose / restore context</button>
 <details><summary>State and measurements</summary><pre id="state"></pre></details><p id="results" role="status"></p>
 </aside>
-<script type="module" src="./sky-study.js"></script>
+<script>
+const startupMessage=document.getElementById('startup-message');
+if(location.protocol==='file:'){
+  startupMessage.hidden=false;
+  startupMessage.append('This preview needs the local server. Run ');
+  const command=document.createElement('code');command.textContent='npm start';startupMessage.append(command,' in the project folder, then ');
+  const link=document.createElement('a');link.href='http://127.0.0.1:4173/dev/sky-study.html';link.textContent='open the running preview';link.style.color='inherit';startupMessage.append(link,'. If you set PORT, use that port instead.');
+  document.querySelectorAll('aside input, aside select, aside button').forEach(control=>control.disabled=true);
+}else{
+  const module=document.createElement('script');module.type='module';module.src='./sky-study.js';
+  module.onerror=()=>{startupMessage.hidden=false;startupMessage.textContent='The preview could not load. Check that the local server is running, then reload this page.';};
+  document.body.append(module);
+}
+</script>
 </html>
