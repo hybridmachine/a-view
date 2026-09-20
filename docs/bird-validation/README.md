@@ -4,8 +4,10 @@ Validated September 20, 2026, on Node 26.7.0 and Chrome 153 / ANGLE Metal on App
 
 - `npm run check`: passed.
 - `npm test`: 76 passed, including migration from active/future/final/built/stale version-3 worlds, the existing version-1/2 chain, restart during flight, transactional failure, full causal history equality, roof opportunities, and bounded audio cancellation.
-- Focused bird browser checks: [17 passed](browser-results.json), including 240 route/light/phase draws, shelter coverage, pause/resume, reduced motion, studies, fallback/context restoration, matching two-client pixels, quiet notes, and native Web Audio scheduling/cancellation.
+- Focused bird browser checks: [18 passed](browser-results.json), including 240 route/light/phase draws, shelter coverage, pause/resume, reduced motion, studies, fallback/context restoration, matching two-client pixels, quiet notes, and native Web Audio scheduling/cancellation.
 - Existing [sky](sky-browser-results.json), [visitor display](display-results.json), [foliage](foliage-browser-results.json), [weather](weather-browser-results.json), and [cottage](cottage-browser-results.json) suites passed. These are new regression results copied here; earlier feature evidence remains unchanged.
+
+Review follow-up: bird activity now clears when construction rendering is skipped at night, when debug/study views omit the bird, and while the settled bird is hidden in shelter. The added browser regression checks each transition and the return to a visible perch. Event insertion reuses one prepared statement per catch-up transaction. Syntax checks, all 76 tests, the focused browser suite, and the catch-up benchmark were rerun after these fixes; the other browser reports above are from the initial implementation.
 
 ## Artwork and timing
 
@@ -25,9 +27,9 @@ The voice retains the existing synthesized motif, with shared phrases committed 
 
 | Elapsed downtime | Catch-up | Yields | Total events | Bird state |
 | --- | --- | --- | --- | --- |
-| 1 real day | 16 ms | 0 | 426 | 616 bytes |
-| 30 real days / one world year | 249 ms | 0 | 10,951 | 612 bytes |
-| 365 real days | 2,977 ms | 10 | 132,101 | 618 bytes |
+| 1 real day | 20 ms | 0 | 426 | 616 bytes |
+| 30 real days / one world year | 194 ms | 0 | 10,951 | 612 bytes |
+| 365 real days | 2,249 ms | 10 | 132,101 | 618 bytes |
 
 The month simulation contains 32 roof outings and 736 short calls over 365 world days. Pending actions (including call lead time) occupy about 0.73% of elapsed time. Routine history remains durable, while only the first roof arrival and the third qualifying daily branch return add bird notes. Supporting return IDs are retained in the habit event payload; the current record caps its return evidence at three entries.
 

@@ -57,8 +57,8 @@ export class WorldStore {
         const environment=advanceSurface(state.environment,state.epoch,at);
         if(environment.ticks){state.environment=environment.state;state.revision+=environment.ticks;state.updatedAt=Math.max(state.updatedAt,surfaceTime(state.environment));changed=true;}
       };
-      const record=event=>this.db.prepare('INSERT INTO events(id,at,type,text,payload,noteVisible) VALUES (?,?,?,?,?,?)')
-        .run(event.id,event.at,event.type,event.text,JSON.stringify(event.payload),event.noteVisible);
+      const insertEvent=this.db.prepare('INSERT INTO events(id,at,type,text,payload,noteVisible) VALUES (?,?,?,?,?,?)');
+      const record=event=>insertEvent.run(event.id,event.at,event.type,event.text,JSON.stringify(event.payload),event.noteVisible);
       // Canonical ties: environment, nest delivery, bird/cottage completion,
       // bird/cottage decision. No subsystem runs ahead during catch-up.
       while (nextCommitAt(state)<=target && processed<MAX_WORLD_BOUNDARIES) {

@@ -10,8 +10,7 @@ export class BirdRenderer {
     this.valid=this.valid&&!!this.ctx;
   }
   draw(target,pose,light,point,scale,{motion=true}={}){
-    if(!this.valid||!pose)return false;
-    if(pose.hidden)return true;
+    if(!this.valid||!pose||pose.hidden)return false;
     const ctx=this.ctx,art=this.art;
     ctx.clearRect(0,0,96,96);ctx.save();ctx.translate(48,48);
     ctx.save();ctx.scale(pose.scale*pose.direction,pose.scale);ctx.globalAlpha=.55+.35*light;

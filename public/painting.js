@@ -149,18 +149,18 @@ export class Painting {
     }
     const seconds=motionSeconds;
     this.ctx.clearRect(0,0,this.width,this.height);
+    this.birdActive=false;
+    this.birdPose=null;
     if(!preview?.debug){
       if(this.motion){
         if(this.cottageActive&&!study)this.drawHearthSmoke(snapshot.world.cottage,epoch,now,c);
         this.drawReeds(c,w,seconds);
       }
       this.drawNest(snapshot.world.nest,c);
-      this.birdActive=false;
       const bird=preview?.bird??(!study&&snapshot.world.bird?{state:snapshot.world.bird,now}:null);
       if(bird){
         this.birdPose=sampleBird(bird.state,snapshot.world.action,bird.now,{reducedMotion:!this.motion});
-        if(this.birdPose?.legacy&&c.elevation<-.12)this.birdActive=this.birdRenderer.valid;
-        else this.birdActive=this.birdRenderer.draw(this.ctx,this.birdPose,c.light,(x,y)=>this.point(x,y),this.scale,{motion:this.motion});
+        if(!(this.birdPose?.legacy&&c.elevation<-.12))this.birdActive=this.birdRenderer.draw(this.ctx,this.birdPose,c.light,(x,y)=>this.point(x,y),this.scale,{motion:this.motion});
       }else if(!study)this.drawBird(snapshot.world.action,now,c,seconds);
       if(this.motion&&!study)this.drawDistantBirds(c,seconds);
       if(w.rain>.05)this.drawRain(w,seconds,c);

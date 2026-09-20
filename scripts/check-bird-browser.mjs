@@ -14,10 +14,26 @@ try{
     let count=0;
     for(const fixture of ['Oak perch','Sheltered bird','Roof perch','Oak flight','Shelter flight','Roof flight'])for(const hour of [0,5,15.5,19.5])for(const phase of [0,1,2,3,4,5,6,7,8,9]){
       skyStudy.fixture(fixture);Object.assign(skyStudy.state,{hour,birdTime:phase});skyStudy.render();count++;
-      if(!skyStudy.painter.birdActive||skyStudy.painter.gl.getError()!==0)return {pass:false,count};
+      const painter=skyStudy.painter;
+      if(!painter.birdPose||painter.birdActive===painter.birdPose.hidden||painter.gl.getError()!==0)return {pass:false,count,fixture,hour,phase};
     }
     return {pass:true,count};
   });check('All bird routes and perches render through day/night',matrix.pass,matrix);
+  const activity=await p.evaluate(async()=>{
+    const {createBirdState}=await import('/shared/bird.js'),painter=skyStudy.painter;
+    const snapshot={world:{epoch:0,nest:{materials:6},action:null,bird:createBirdState(0)}};
+    const draw=(hour,options={})=>{
+      skyStudy.state.hour=hour;
+      painter.render(snapshot,1000,'preview',{conditions:skyStudy.conditions(),bird:{state:snapshot.world.bird,now:1000},...options});
+      return painter.birdActive;
+    };
+    const daytime=draw(12),nighttime=draw(0);
+    draw(12);const debug=draw(12,{debug:1});
+    draw(12);const study=draw(12,{bird:null});
+    skyStudy.fixture('Sheltered bird');const sheltered=painter.birdActive;
+    skyStudy.fixture('Oak perch');const returned=painter.birdActive;
+    return {daytime,nighttime,debug,study,sheltered,returned};
+  });check('Skipped bird frames clear activity across night, debug, study, and shelter',activity.daytime&&!activity.nighttime&&!activity.debug&&!activity.study&&!activity.sheltered&&activity.returned,activity);
   for(const fixture of ['Oak perch','Sheltered bird','Roof perch']){
     await p.evaluate(name=>skyStudy.fixture(name),fixture);await p.screenshot({path:`${directory}/${fixture.toLowerCase().replaceAll(' ','-')}.png`});
   }

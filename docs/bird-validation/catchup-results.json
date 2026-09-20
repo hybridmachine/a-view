@@ -4,7 +4,7 @@
   "results": [
     {
       "realDays": 1,
-      "elapsedMs": 15.702375,
+      "elapsedMs": 19.920541999999998,
       "yields": 0,
       "birdStateBytes": 616,
       "eventCount": 426,
@@ -48,7 +48,7 @@
     },
     {
       "realDays": 30,
-      "elapsedMs": 248.94449999999998,
+      "elapsedMs": 194.070375,
       "yields": 0,
       "birdStateBytes": 612,
       "eventCount": 10951,
@@ -96,7 +96,7 @@
     },
     {
       "realDays": 365,
-      "elapsedMs": 2976.6391670000003,
+      "elapsedMs": 2248.660292,
       "yields": 10,
       "birdStateBytes": 618,
       "eventCount": 132101,

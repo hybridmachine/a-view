@@ -9,6 +9,18 @@
       }
     },
     {
+      "name": "Skipped bird frames clear activity across night, debug, study, and shelter",
+      "pass": true,
+      "detail": {
+        "daytime": true,
+        "nighttime": false,
+        "debug": false,
+        "study": false,
+        "sheltered": false,
+        "returned": true
+      }
+    },
+    {
       "name": "Bird display: pause",
       "pass": true
     },
@@ -45,12 +57,12 @@
       "pass": true,
       "detail": {
         "baseline": {
-          "median": 0.19999998807907104,
-          "p95": 0.8999999761581421
+          "median": 0.4000000059604645,
+          "p95": 0.7999999821186066
         },
         "bird": {
           "median": 0.20000001788139343,
-          "p95": 1.0999999940395355
+          "p95": 0.9000000059604645
         },
         "scratchBytes": 36864
       }
