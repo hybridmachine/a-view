@@ -21,8 +21,9 @@ const server = createServer(async (req, res) => {
       res.end(JSON.stringify(store.snapshot())); return;
     }
     if (url.pathname === '/api/stream') {
+      const snapshot = store.snapshot();
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
-      res.write(`data: ${JSON.stringify(store.snapshot())}\n\n`);
+      res.write(`data: ${JSON.stringify(snapshot)}\n\n`);
       clients.add(res); req.on('close', () => clients.delete(res)); return;
     }
     const isShared = url.pathname.startsWith('/shared/');
@@ -36,7 +37,8 @@ const server = createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': types[extname(path)] || 'application/octet-stream', 'Cache-Control': path.includes('/assets/') ? 'public, max-age=86400' : 'no-cache', 'Content-Length': body.length });
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch(error) {
-    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') { res.writeHead(404); res.end('Not found'); }
+    if (error.code === 'WORLD_CATCHING_UP' && !res.headersSent) { res.writeHead(503, {'Retry-After': '2'}); res.end('World is catching up'); }
+    else if (error.code === 'ENOENT' || error.code === 'ENOTDIR') { res.writeHead(404); res.end('Not found'); }
     else { console.error(error); if (!res.headersSent) res.writeHead(500); res.end('Unable to load this view.'); }
   }
 });

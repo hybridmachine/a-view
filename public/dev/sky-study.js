@@ -2,9 +2,12 @@ import { Painting } from '../painting.js';
 import { SkyRenderer } from '../sky-renderer.js';
 import { calendar, realTime, SCENES, viewConditions } from '/shared/world.js';
 import { runFoliagePixelChecks } from './foliage-checks.js';
+import {surfaceFixture} from '/shared/surface-weather.js';
 
 const $=id=>document.getElementById(id);
 export const fixtures={
+  'After rain':{hour:15.5,cover:.18,motion:12,surface:'wet'},
+  'Drying path':{hour:15.5,cover:.18,motion:12,surface:'drying'},
   'Clear night':{hour:0,cover:0,motion:1000},
   'Thin cloud over moon':{hour:0,cover:.4,motion:1000},
   'Dense cloud over moon':{hour:0,cover:.96,motion:1000},
@@ -21,7 +24,7 @@ export const fixtures={
 for(const name of Object.keys(fixtures))$('fixture').add(new Option(name,name));
 const painter=new Painting($('painting'),$('life'));
 const snapshot={world:{epoch:0,nest:{materials:6},action:null}};
-const state={hour:0,cover:0,time:1000,motion:1000,moonX:.78,moonY:.16,debug:0,fixed:true,far:true,near:true,rain:0,playing:false,foliageWind:null,foliageRest:false,foliagePilot:false,foliageGuides:false};
+const state={hour:0,cover:0,time:1000,motion:1000,moonX:.78,moonY:.16,debug:0,fixed:true,far:true,near:true,rain:0,playing:false,foliageWind:null,foliageRest:false,foliagePilot:false,foliageGuides:false,surface:'dry'};
 let lastFrame=0,lastMotionFrame=0,lastUpdate=0;
 function conditions(){
   const c=calendar(0,realTime(0,135*86400000+state.hour*3600000));
@@ -30,6 +33,7 @@ function conditions(){
 }
 function render(){
   painter.render(snapshot,state.time*1000,'preview',{conditions:conditions(),realSeconds:state.time,motionSeconds:state.motion,
+    surface:surfaceFixture(state.surface),
     moon:state.fixed?{x:state.moonX,y:state.moonY,phase:.5,visible:true}:null,debug:state.debug,visibleLayers:[+state.far,+state.near],
     foliageWind:state.foliageWind,foliageRest:state.foliageRest,foliageOnly:state.foliagePilot?['oak-east','grass-shore-west']:null});
   if(state.foliageGuides){
@@ -45,13 +49,15 @@ function sync(){
   for(const name of ['hour','cover','time','motion','moonX','moonY','debug'])$(name).value=state[name];
   for(const name of ['fixed','far','near','foliageRest','foliagePilot','foliageGuides'])$(name).checked=state[name];
   $('foliageWind').value=state.foliageWind??'';
+  $('surface').value=state.surface;
   render();
 }
-function fixture(name){Object.assign(state,{foliageWind:null,foliageRest:false,foliagePilot:false},fixtures[name],{time:1000,rain:name==='Daytime overcast'?.7:0,moonX:.78,moonY:.16});sync();}
+function fixture(name){Object.assign(state,{foliageWind:null,foliageRest:false,foliagePilot:false,surface:'dry'},fixtures[name],{time:1000,rain:name==='Daytime overcast'?.7:0,moonX:.78,moonY:.16});sync();}
 $('fixture').onchange=()=>fixture($('fixture').value);
 for(const name of ['hour','cover','time','motion','moonX','moonY','debug'])$(name).oninput=()=>{state[name]=+$(name).value;render();};
 for(const name of ['fixed','far','near','foliageRest','foliagePilot','foliageGuides'])$(name).oninput=()=>{state[name]=$(name).checked;render();};
 $('foliageWind').oninput=()=>{state.foliageWind=$('foliageWind').value===''?null:+$('foliageWind').value;render();};
+$('surface').oninput=()=>{state.surface=$('surface').value;render();};
 $('play').onclick=()=>{state.playing=!state.playing;$('play').textContent=state.playing?'Pause crossing':'Play crossing';};
 $('loss').onclick=()=>{const extension=painter.gl?.getExtension('WEBGL_lose_context');if(extension){extension.loseContext();setTimeout(()=>extension.restoreContext(),1500);}};
 let drag=null;

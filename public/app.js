@@ -19,7 +19,7 @@ document.querySelectorAll('[data-icon]').forEach(element=>icon(element,element.d
 icon($('#sound-button .icon'),'muted');
 const painter=new Painting($('#painting'),$('#life')),audio=new Ambience();
 const client=new WorldClient({onSnapshot:accept});
-let snapshot=null,pausedSnapshot=null,pausedAt=null,study=null,lastRender=0,lastLabels=0,lastRevision=0,connection='connecting',toastTimer,quietTimer;
+let snapshot=null,pausedSnapshot=null,pausedAt=null,study=null,lastRender=0,lastLabels=0,lastEventSeq=null,seenEventSeq=0,connection='connecting',toastTimer,quietTimer;
 let followed=false;try{followed=localStorage.getItem('a-view:follow:lakeside-cottage')==='true';}catch{}
 const now=()=>pausedAt??client.now();
 function toast(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').classList.add('show');toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3500);}
@@ -28,7 +28,7 @@ function wake(){document.querySelectorAll('.chrome').forEach(e=>e.classList.remo
 addEventListener('pointermove',wake,{passive:true});addEventListener('pointerdown',wake,{passive:true});addEventListener('keydown',wake);addEventListener('focusin',wake);
 function openPanel(id){$(id).showModal();wake();}
 $('#about-button').onclick=()=>openPanel('#about-dialog');
-$('#notes-button').onclick=()=>{$('#note-dot').hidden=true;openPanel('#notes-dialog');};
+$('#notes-button').onclick=()=>{seenEventSeq=lastEventSeq??0;$('#note-dot').hidden=true;openPanel('#notes-dialog');};
 $('#explore-button').onclick=()=>openPanel('#explore-dialog');
 $('#current-place').onclick=()=>$('#explore-dialog').close();
 document.querySelectorAll('dialog').forEach(dialog=>{
@@ -62,8 +62,11 @@ $('#return-live').onclick=()=>{study=null;document.querySelectorAll('[data-light
 function accept(data){
   // WorldClient has checked ordering and anchored the shared clock before this callback.
   snapshot=data;connection='live';
-  if(lastRevision&&data.world.revision>lastRevision)$('#note-dot').hidden=false;
-  if(data.world.revision!==lastRevision){updateNotes();lastRevision=data.world.revision;}
+  const eventSeq=data.events?.[0]?.seq??0;
+  if(lastEventSeq===null)seenEventSeq=eventSeq;
+  if($('#notes-dialog').open)seenEventSeq=eventSeq;
+  $('#note-dot').hidden=eventSeq<=seenEventSeq;
+  if(eventSeq!==lastEventSeq){updateNotes();lastEventSeq=eventSeq;}
   updateLabels();
 }
 function refresh(){return client.refresh();}

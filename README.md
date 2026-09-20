@@ -36,6 +36,7 @@ HTTP redirects to HTTPS; Caddy obtains and renews certificates automatically. Se
 - Server-authoritative calendar: exactly 365 world days per 30 elapsed real days. Daylight varies seasonally at a fictional latitude of 49° north.
 - Stable shared weather and two moving painted cloud layers. Moonlight and stars pass behind clouds, hills, and oak leaf gaps. Rain, smoke, reeds, and birds use the same displayed real time.
 - Selective wind motion in six painted grass tufts and four oak leaf clusters, with fixed attachments, shared passing gusts, and restrained leaf flutter.
+- Persistent surface moisture: a damp foreground path, a shore stone, a small puddle, and sparse oak drips after rain. These traces dry over elapsed real minutes.
 - One persisted nest-building study: a bird collects strands and delivers them before material is added. Its action position agrees across visitors. Nine deliveries complete the initial nest; there is no fabricated subsequent breeding cycle.
 - Transactional SQLite state and event records. Catch-up after downtime produces the same nesting result as continuous execution.
 - Field notes derived from committed events, local follows, opt-in synthesized sound, fullscreen where supported, and a local pause that does not stop the world.
@@ -76,7 +77,7 @@ The existing `/dev/sky-study.html` preview includes calm, breeze, gust, and two-
 
 This is the first visual and continuity prototype. The spring landscape is painted into registered day/night plates; foliage does not yet grow, lose leaves, or accumulate snow. Blending these plates is an art experiment, not a full relightable 3D scene. The clock and season labels continue advancing, and the interface identifies the spring artwork study.
 
-The nest study ends when construction finishes. Aging, breeding, generations, inhabitants' routines, squirrels, ecological resource budgets, water accumulation, additional scenes, and region transfers remain design work. Ambient distant birds and smoke are visual effects, not individually persisted entities. Rain currently changes appearance without a persisted water budget. The sky is an approximate procedural study, not an astronomical ephemeris. Sound is synthesized ambience, not a spatial ecological soundscape.
+The nest study ends when construction finishes. Aging, breeding, generations, inhabitants' routines, squirrels, ecological resource budgets, physical water accumulation, additional scenes, and region transfers remain design work. Ambient distant birds and smoke are visual effects, not individually persisted entities. Surface moisture uses persisted normalized artistic reservoirs, not a conserved physical water budget. The sky is an approximate procedural study, not an astronomical ephemeris. Sound is synthesized ambience, not a spatial ecological soundscape.
 
 The world is shared by browsers connected to the same server. The application binds to loopback; the production configuration exposes it through Caddy. SQLite is a deliberate small-prototype substitute for the planned PostgreSQL infrastructure; this version is a single-process deployment. Every stream update sends a complete bounded snapshot, so a reconnect does not depend on replaying stream deltas. Out-of-order responses cannot replace newer state or rewind the displayed clock. The view holds just before a pending delivery completes until a committed snapshot includes its effects. Expired snapshots trigger a bounded HTTP refresh even when the stream has silently stalled; overlapping refreshes share one request.
 
@@ -103,3 +104,11 @@ The larger architecture and next milestones are in [DESIGN.md](DESIGN.md). Artwo
 ## License
 
 This project is available under the [MIT License](LICENSE).
+
+## Weather traces
+
+Rain fills four normalized surface stores on canonical ten-real-second ticks. Requests and render frames do not change the integration grid. Browsers sample the fractional tick within the snapshot lease; local pause and connection expiry hold the displayed state. Reduced motion removes falling drips and holds ripple motion while surfaces can slowly dry. Private light studies use local dry/wet fixtures and never alter the shared stores.
+
+The version-2 migration preserves the world's epoch, nest, and events, and starts surface memory dry at the upgrade timestamp. Existing history is not backfilled. Keep a pre-upgrade SQLite backup: the old version-1 application cannot read the migrated database. Very long catch-up advances in bounded batches and HTTP returns 503 until the current checkpoint is available.
+
+A small optional two-texture pass draws registered wet paint before moving foliage. Asset failure omits the entire effect and preserves the original landscape. The new **After rain**, **Drying path**, and **Surface memory** controls are in the existing `/dev/sky-study.html` preview. `scripts/prepare-weather-assets.mjs` reproduces the atlases with optional Sharp; `scripts/check-weather-browser.mjs` runs the focused checks with optional Playwright and the same local-server/browser environment variables as the sky suite. See [weather validation](docs/weather-validation/README.md) and [the implementation plan](WEATHER_TRACES_IMPLEMENTATION_PLAN.md).

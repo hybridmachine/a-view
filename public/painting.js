@@ -2,6 +2,8 @@ import { birdPose, clamp, hash, mix, mod, SCENES, viewConditions } from '/shared
 import { loadImage, loadSkyAssets, SkyRenderer } from './sky-renderer.js';
 import { FoliageRenderer, loadFoliageAssets } from './foliage-renderer.js';
 import { sampleFoliage } from '/shared/foliage.js';
+import {loadWeatherAssets, WeatherRenderer} from './weather-renderer.js';
+import {sampleSurface, surfaceFixture, dripPose} from '/shared/surface-weather.js';
 
 export class Painting {
   constructor(canvas, lifeCanvas, { scene = SCENES[0], fallback = document.querySelector('#fallback') } = {}) {
@@ -26,6 +28,7 @@ export class Painting {
     this.contextLost=event=>{
       event.preventDefault();this.generation++;this.ready=false;
       this.hideGPU();this.ctx.clearRect(0,0,this.width,this.height);
+      this.weatherRenderer?.dispose();this.weatherRenderer=null;this.pendingWeather=null;this.surfaceState=null;
       this.renderer?.dispose();this.renderer=null;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.pendingFoliage=null;this.foliageState=null;
     };
     this.contextRestored=()=>{if(!this.disposed)this.init();};
@@ -44,6 +47,7 @@ export class Painting {
     this.ready=false;this.hideGPU();this.renderer?.dispose();this.renderer=null;
     this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.foliageFailure=null;this.completeFrame=false;
     this.pendingFoliage=null;this.foliageState=null;this.foliageTask=Promise.resolve();
+    this.weatherRenderer?.dispose();this.weatherRenderer=null;this.pendingWeather=null;this.surfaceState=null;this.weatherFailure=null;this.weatherTask=Promise.resolve();
     // Original plates load independently; sky failure cannot reject this fallback.
     this.fallbackImages??=Promise.allSettled([loadImage(this.scene.assets.day),loadImage(this.scene.assets.night)]);
     try{
@@ -52,11 +56,17 @@ export class Painting {
       // Start both loads, but optional foliage must never delay the intact sky.
       // Catch immediately: foliage may reject before the sky has finished.
       const foliageLoad=loadFoliageAssets(this.scene).then(images=>({images}),error=>({error}));
+      const weatherLoad=loadWeatherAssets(this.scene).then(images=>({images}),error=>({error}));
       const images=await loadSkyAssets(this.scene);
       if(this.disposed||generation!==this.generation||gl.isContextLost())return;
       this.intactForeground=images.slice(0,2);
       this.renderer=new SkyRenderer(gl,this.scene,images);
       this.ready=true;this.failure=null;
+      this.weatherTask=weatherLoad.then(({images,error})=>{
+        if(this.disposed||generation!==this.generation||gl.isContextLost()||!this.ready)return;
+        if(error)this.weatherFailure=error.message;
+        else if(images)this.pendingWeather=images;
+      });
       this.foliageTask=foliageLoad.then(({images,error})=>{
         if(this.disposed||generation!==this.generation||gl.isContextLost()||!this.ready)return;
         if(error)this.foliageFailure=error.message;
@@ -81,6 +91,7 @@ export class Painting {
     if(!this.motion&&this.frozenMotion===null)this.frozenMotion=realSeconds;
     const motionSeconds=preview?.motionSeconds??(this.motion?realSeconds:this.frozenMotion);
     this.lastMotion=motionSeconds;
+    this.surfaceState=preview?.surface??(study?surfaceFixture(study):sampleSurface(snapshot.world.environment,epoch,now));
     // Keep fallback illumination current during startup, failures and context loss.
     const url=c.light>.5?this.scene.assets.day:this.scene.assets.night;
     if(this.fallback&&this.fallback.getAttribute('src')!==url)this.fallback.src=url;
@@ -97,6 +108,18 @@ export class Painting {
       const skyOptions={calendar:c,weather:w,realSeconds,motionSeconds,crop:this.crop,offset:this.offset,
         moon:preview?.moon,debug:preview?.debug,visibleLayers:preview?.visibleLayers};
       this.cloudState=this.renderer.draw(skyOptions);
+      if(this.pendingWeather&&!preview?.debug){
+        const images=this.pendingWeather;this.pendingWeather=null;
+        try{this.weatherRenderer=new WeatherRenderer(this.gl,this.scene,images);}
+        catch(error){this.weatherFailure=error.message;}
+      }
+      if(this.weatherRenderer&&!preview?.debug){
+        try{this.weatherRenderer.draw({calendar:c,weather:w,surface:this.surfaceState,motionSeconds,crop:this.crop,offset:this.offset});}
+        catch(error){
+          this.weatherFailure=error.message;this.weatherRenderer.dispose();this.weatherRenderer=null;
+          this.cloudState=this.renderer.draw(skyOptions);
+        }
+      }
       if(this.foliageRenderer&&!preview?.debug){
         try{
           this.foliageState=this.foliageRenderer.draw({calendar:c,weather:w,motionSeconds,crop:this.crop,offset:this.offset,
@@ -105,6 +128,7 @@ export class Painting {
         }catch(error){
           this.restoreIntactForeground(error);
           this.cloudState=this.renderer.draw(skyOptions);
+          // The intact foreground is a complete safe fallback for this frame.
         }
       }
       if(!preview?.debug)this.completeFrame=true;
@@ -118,6 +142,7 @@ export class Painting {
       if(!study)this.drawBird(snapshot.world.action,now,c,seconds);
       if(this.motion&&!study)this.drawDistantBirds(c,seconds);
       if(w.rain>.05)this.drawRain(w,seconds,c);
+      if(this.motion&&this.weatherRenderer&&this.surfaceState)this.drawDrips(this.surfaceState,w,seconds,c);
     }
     return {calendar:c,weather:w};
   }
@@ -127,6 +152,7 @@ export class Painting {
     removeEventListener('resize',this.resize);this.media.removeEventListener('change',this.motionChanged);
     this.canvas.removeEventListener('webglcontextlost',this.contextLost);this.canvas.removeEventListener('webglcontextrestored',this.contextRestored);
     this.renderer?.dispose();this.renderer=null;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.fallbackImages=null;this.pendingFoliage=null;this.foliageState=null;
+    this.weatherRenderer?.dispose();this.weatherRenderer=null;this.pendingWeather=null;this.surfaceState=null;
     this.ctx.clearRect(0,0,this.width,this.height);
   }
   drawNest(nest,c){
@@ -194,5 +220,15 @@ export class Painting {
       const x=mod(hash(i+811)*this.width+seconds*(11+hash(i)*8),this.width),y=mod(hash(i+328)*this.height+seconds*(240+hash(i+21)*160),this.height);
       ctx.moveTo(x,y);ctx.lineTo(x+2,y+7+hash(i)*5);
     }ctx.stroke();
+  }
+  drawDrips(surface,w,seconds,c){
+    const ctx=this.ctx;
+    for(const source of this.scene.surfaceWeather.drips){
+      const pose=dripPose(seconds,source,surface.canopyStorage,w.rain);
+      if(!pose)continue;
+      const [x,y]=this.point(pose.x/this.scene.width,pose.y/this.scene.height);
+      ctx.strokeStyle=`rgba(202,210,200,${pose.alpha*(.25+.75*c.light)})`;ctx.lineWidth=.7*this.scale;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+2.5*this.scale);ctx.stroke();
+    }
   }
 }

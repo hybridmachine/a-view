@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "atlas": [
+    512,
+    512
+  ],
+  "patches": 3,
+  "source": "Generated wet-source color reference; canonical foreground brush geometry",
+  "alpha": "matching straight-alpha PNG pair"
+}
