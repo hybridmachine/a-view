@@ -114,6 +114,23 @@ try{
   const visitor=await page();await visitor.route('**/lakeside-cottage-v1/*.png',route=>route.abort());await visitor.goto(base);
   await visitor.waitForFunction(()=>document.querySelector('#scene-description').textContent.includes('static painting'));
   check('Accessible description identifies the static cottage fallback',(await visitor.locator('#scene-description').textContent()).includes('static painting. Shared cottage state: '));await visitor.close();
+  const pausedVisitor=await page(),seed=await (await pausedVisitor.request.get(`${base}/api/world`)).json();
+  const nextDecisionAt=seed.world.cottage.introducedAt+(Math.ceil((seed.serverTime-seed.world.cottage.introducedAt)/30_000)+10)*30_000;
+  seed.nextCommitAt=nextDecisionAt;seed.validUntil=nextDecisionAt;seed.world.action=null;
+  Object.assign(seed.world.cottage,{pending:null,nextDecisionAt,rooms:{main:false,second:false}});
+  let response=structuredClone(seed);
+  await pausedVisitor.route('**/api/world',route=>route.fulfill({json:response}));await pausedVisitor.route('**/api/stream',route=>route.abort());
+  await pausedVisitor.goto(base);await pausedVisitor.waitForSelector('#painting.ready');
+  await pausedVisitor.waitForFunction(()=>document.querySelector('#cottage-detail').textContent.includes('windows are dark'));
+  await pausedVisitor.locator('#pause-button').click();const pausedText=await pausedVisitor.locator('#cottage-detail').textContent();
+  response={...seed,serverTime:seed.serverTime+60_000,world:{...seed.world,revision:seed.world.revision+1,cottage:{...seed.world.cottage,rooms:{main:true,second:false}}},
+    events:[{seq:(seed.events[0]?.seq??0)+1,id:'pause-test',at:seed.serverTime+60_000,type:'test',text:'A committed pause-test observation.'},...seed.events]};
+  await pausedVisitor.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+  await pausedVisitor.waitForFunction(()=>!document.querySelector('#note-dot').hidden);
+  check('Paused cottage observation holds while a newer snapshot is accepted',(await pausedVisitor.locator('#cottage-detail').textContent())===pausedText);
+  await pausedVisitor.locator('#pause-button').click();
+  check('Resuming cottage observation rejoins the current shared room state',(await pausedVisitor.locator('#cottage-detail').textContent()).includes('main room'));
+  await pausedVisitor.close();
   if(process.env.COTTAGE_RECORD==='1'){
     const {WorldStore}=await import('../src/store.js'),store=new WorldStore(':memory:',1_800_000_000_000);
     let before,after,fire;

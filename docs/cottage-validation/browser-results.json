@@ -99,11 +99,11 @@
     "pass": true,
     "detail": {
       "baseline": {
-        "median": 0.20000001788139343,
+        "median": 0.19999998807907104,
         "p95": 0.5
       },
       "cottage": {
-        "median": 0.4000000059604645,
+        "median": 0.29999998211860657,
         "p95": 0.5999999940395355
       },
       "textureBytes": 524288
@@ -155,6 +155,14 @@
   },
   {
     "name": "Accessible description identifies the static cottage fallback",
+    "pass": true
+  },
+  {
+    "name": "Paused cottage observation holds while a newer snapshot is accepted",
+    "pass": true
+  },
+  {
+    "name": "Resuming cottage observation rejoins the current shared room state",
     "pass": true
   },
   {

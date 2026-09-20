@@ -4,13 +4,13 @@ Validated September 20, 2026, with Node 26.7.0 and Chrome 153 on Apple M1/ANGLE 
 
 - `npm run check`: passed.
 - `npm test`: 61 tests passed. Coverage includes chronological catch-up, equal-time bird/cottage effects, malformed client boundaries, migration and restart during a task, dwell/weather hysteresis, smoke tails, note filtering, and retryable HTTP/SSE catch-up responses.
-- Focused cottage browser checks: 28 passed; [results](browser-results.json), including a 120-draw matrix of illumination, rain, independent lights, and casement positions.
+- Focused cottage browser checks: 30 passed; [results](browser-results.json), including a 120-draw matrix of illumination, rain, independent lights, and casement positions.
 - Existing sky shader/lifecycle checks: passed; [results](sky-browser-results.json).
 - Existing foliage suite: 40 checks passed; [results](foliage-browser-results.json).
 - Existing weather suite: 16 checks passed; [results](weather-browser-results.json).
 - Existing visitor display suite: [12 checks passed](display-results.json), covering pause, studies, return to live, action/lease holding, and tab suspension.
 
-Thirty real days (one world year) of joint catch-up took 233 ms in the final local unit run. The test database had 4,617 events, including 50 deliberately inserted hidden fixtures; the current cottage state remained under 1,800 characters. Arbitrary reads and one-step catch-up produced exactly equal snapshots and complete chronological histories. The HTTP test additionally exercises a world one real year behind, yielding bounded progress until all subsystems catch up.
+Thirty real days (one world year) of joint catch-up took 208 ms in the post-review local unit run. The test database had 4,617 events, including 50 deliberately inserted hidden fixtures; the current cottage state remained under 1,800 characters. Arbitrary reads and one-step catch-up produced exactly equal snapshots and complete chronological histories. The HTTP test additionally exercises a world one real year behind, yielding bounded progress until all subsystems catch up.
 
 ## Art and recovery
 
@@ -32,3 +32,9 @@ Run the server on port 4174 with a disposable `A_VIEW_DB`. Use optional developm
 The small generated interior source and exact prompt are preserved in [ARTWORK.md](../../ARTWORK.md). Window panels and surrounding architecture retain canonical foreground geometry. The renderer is a shallow painted treatment, not a 3D building or physical light simulation.
 
 Safari, Firefox, and physical mobile-device checks remain for human/device review. A visible resident, furniture handling, reflected room light, sound, and a full human lifecycle remain outside this release. Deployment awaits the user's human review.
+
+## Review follow-up
+
+The cottage observation now reads the displayed snapshot, so newly accepted world updates cannot change it during a local pause. A browser regression accepts a newer snapshot while paused, verifies the old room description remains, then resumes into the newer room state.
+
+The migration/restart fixture now creates the original version-2 events schema without either new column. It verifies transactional addition of `payload` and `noteVisible`, preserved event IDs/sequences/text, null payload and visible-note defaults, environmental history, and a pending cottage task across restart. All 61 tests pass after the review fixes.

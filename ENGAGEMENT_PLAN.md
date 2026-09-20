@@ -1,6 +1,6 @@
 # A View — quiet engagement
 
-Status: brainstorm recorded September 19, 2026. Weather traces merged in [PR #5](https://github.com/hybridmachine/a-view/pull/5) on September 20. Cottage life is implemented on `codex/cottage-life` and is being validated for review. The remaining ideas are future work; deployment awaits human review.
+Status: brainstorm recorded September 19, 2026. Weather traces merged in [PR #5](https://github.com/hybridmachine/a-view/pull/5) on September 20. Cottage life is implemented in [PR #6](https://github.com/hybridmachine/a-view/pull/6), which records review and merge status. The remaining ideas are future work; deployment awaits human review.
 
 ## Creative direction
 

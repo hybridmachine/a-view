@@ -104,10 +104,19 @@ test('smoke emission starts with the hearth and disperses after extinction',()=>
 test('v2 migration and restart preserve environmental history and pending cottage actions',()=>{
   const directory=mkdtempSync(join(tmpdir(),'a-view-cottage-')),file=join(directory,'world.sqlite');
   try{
-    let store=new WorldStore(file,epoch),old=store.snapshot(epoch+28_000);store.close();
+    const seed=new WorldStore(':memory:',epoch),old=seed.snapshot(epoch+28_000);seed.close();
     const db=new DatabaseSync(file),state={...old.world,version:2};delete state.cottage;
-    db.prepare('UPDATE world SET state=?').run(JSON.stringify(state));db.close();
-    store=new WorldStore(file,epoch+60_000);const migrated=store.snapshot(epoch+60_000);
+    db.exec(`CREATE TABLE world (id TEXT PRIMARY KEY, state TEXT NOT NULL);
+      CREATE TABLE events (seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE NOT NULL, at INTEGER NOT NULL, type TEXT NOT NULL, text TEXT NOT NULL);`);
+    db.prepare('INSERT INTO world VALUES (?,?)').run('stillwater',JSON.stringify(state));
+    for(const event of old.events)db.prepare('INSERT INTO events(seq,id,at,type,text) VALUES (?,?,?,?,?)').run(event.seq,event.id,event.at,event.type,event.text);
+    assert.deepEqual(db.prepare('PRAGMA table_info(events)').all().map(column=>column.name),['seq','id','at','type','text']);db.close();
+    let store=new WorldStore(file,epoch+60_000);const migrated=store.snapshot(epoch+60_000);
+    assert.deepEqual(store.db.prepare('PRAGMA table_info(events)').all().map(column=>column.name),['seq','id','at','type','text','payload','noteVisible']);
+    for(const event of old.events){
+      const saved=store.db.prepare('SELECT * FROM events WHERE id=?').get(event.id);
+      assert.equal(saved.seq,event.seq);assert.equal(saved.text,event.text);assert.equal(saved.payload,null);assert.equal(saved.noteVisible,1);
+    }
     assert.equal(migrated.world.cottage.introducedAt,epoch+60_000);assert.equal(migrated.world.epoch,epoch);assert.deepEqual(migrated.world.nest,old.world.nest);
     assert.equal(migrated.world.environment.introducedAt,old.world.environment.introducedAt);
     let current=migrated;

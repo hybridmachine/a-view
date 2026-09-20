@@ -1,6 +1,6 @@
 # Small signs of cottage life
 
-Status: implemented on `codex/cottage-life`, September 20, 2026; awaiting PR review. See [validation evidence](docs/cottage-validation/README.md). The sections below retain the implementation design. This is the second priority in [the engagement plan](ENGAGEMENT_PLAN.md), following [weather traces](WEATHER_TRACES_IMPLEMENTATION_PLAN.md).
+Status: implemented in [PR #6](https://github.com/hybridmachine/a-view/pull/6), September 20, 2026. The PR records review and merge status. Deployment awaits human review. See [validation evidence](docs/cottage-validation/README.md). The sections below retain the implementation design. This is the second priority in [the engagement plan](ENGAGEMENT_PLAN.md), following [weather traces](WEATHER_TRACES_IMPLEMENTATION_PLAN.md).
 
 ## Intended experience and first release
 
