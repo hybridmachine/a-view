@@ -21,3 +21,7 @@ docs/foliage-validation/*.png
 !docs/foliage-validation/foliage-gust.png
 !docs/foliage-validation/view-390-pan-0.png
 docs/foliage-validation/*.mp4
+docs/weather-validation/*.png
+!docs/weather-validation/selections.png
+!docs/weather-validation/after-rain.png
+!docs/weather-validation/view-390.png

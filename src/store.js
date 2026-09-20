@@ -1,5 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { ACTION_DURATION, SCENES, calendar, nextForage, weather } from '../shared/world.js';
+import { advanceSurface, createSurfaceState, surfaceTime, validSurfaceState } from '../shared/surface-weather.js';
 
 export class WorldStore {
   constructor(path, now = Date.now()) {
@@ -11,18 +12,27 @@ export class WorldStore {
     try {
       if (!this.db.prepare('SELECT id FROM world WHERE id=?').get('stillwater')) {
         const start = now + 12_000;
-        const state = { id: 'stillwater', version: 1, epoch: now, updatedAt: now, nest: { id: 'oak-nest-01', materials: 3, stage: 'building' }, action: { id: 'delivery-4', start, end: start + ACTION_DURATION }, revision: 1 };
+        const state = { id: 'stillwater', version: 2, epoch: now, updatedAt: now, environment: createSurfaceState(now), nest: { id: 'oak-nest-01', materials: 3, stage: 'building' }, action: { id: 'delivery-4', start, end: start + ACTION_DURATION }, revision: 1 };
         this.db.prepare('INSERT INTO world VALUES (?,?)').run('stillwater', JSON.stringify(state));
         this.db.prepare('INSERT INTO events(id,at,type,text) VALUES (?,?,?,?)').run('world-opened', now, 'world.opened', 'Our first view of Stillwater. A small nest is already taking shape in the old oak.');
       }
+      const current = JSON.parse(this.db.prepare('SELECT state FROM world WHERE id=?').get('stillwater').state);
+      if (current.version === 1) {
+        current.version = 2;
+        current.environment = createSurfaceState(Math.max(now, current.updatedAt));
+        current.revision++;
+        this.db.prepare('UPDATE world SET state=? WHERE id=?').run(JSON.stringify(current), 'stillwater');
+      } else if (current.version !== 2 || !validSurfaceState(current.environment)) {
+        throw new Error('Unsupported world version or environment');
+      }
       this.db.exec('COMMIT');
-    } catch(error) { this.db.exec('ROLLBACK'); throw error; }
+    } catch(error) { this.db.exec('ROLLBACK'); this.db.close(); throw error; }
   }
   advance(now = Date.now()) {
     this.db.exec('BEGIN IMMEDIATE');
     try {
       const state = JSON.parse(this.db.prepare('SELECT state FROM world WHERE id=?').get('stillwater').state);
-      if (state.version !== 1) throw new Error('Unsupported world version');
+      if (state.version !== 2) throw new Error('Unsupported world version');
       let changed = false;
       while (state.action && now >= state.action.end) {
         const action = state.action;
@@ -36,6 +46,13 @@ export class WorldStore {
         }
         state.updatedAt = action.end; state.revision += 1; changed = true;
       }
+      const environment = advanceSurface(state.environment, state.epoch, now);
+      if (environment.ticks) {
+        state.environment = environment.state;
+        state.revision += environment.ticks;
+        state.updatedAt = Math.max(state.updatedAt, surfaceTime(state.environment));
+        changed = true;
+      }
       if (changed) this.db.prepare('UPDATE world SET state=? WHERE id=?').run(JSON.stringify(state), 'stillwater');
       this.db.exec('COMMIT');
       return state;
@@ -43,6 +60,9 @@ export class WorldStore {
   }
   snapshot(now = Date.now()) {
     const state = this.advance(now);
+    if (now - surfaceTime(state.environment) >= 10_000) {
+      const error = new Error('World is catching up'); error.code = 'WORLD_CATCHING_UP'; throw error;
+    }
     return { serverTime: now, validUntil: now + 30_000, world: state, scenes: SCENES, calendar: calendar(state.epoch, now), weather: weather(state.epoch, now), events: this.db.prepare('SELECT * FROM events ORDER BY seq DESC LIMIT 20').all() };
   }
   close() { this.db.close(); }
