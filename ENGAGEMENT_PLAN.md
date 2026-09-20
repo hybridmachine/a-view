@@ -1,6 +1,6 @@
 # A View — quiet engagement
 
-Status: brainstorm recorded September 19, 2026. Weather traces merged in [PR #5](https://github.com/hybridmachine/a-view/pull/5) on September 20. Cottage life is implemented in [PR #6](https://github.com/hybridmachine/a-view/pull/6), which records review and merge status. The remaining ideas are future work; deployment awaits human review.
+Status: brainstorm recorded September 19, 2026. Weather traces and cottage life are implemented; the local checkout includes the September 20 merges of [PR #5](https://github.com/hybridmachine/a-view/pull/5) and [PR #6](https://github.com/hybridmachine/a-view/pull/6). A familiar bird with daily habits was selected and implemented on a feature branch on September 20. The combined review and bird validation evidence are linked below; uninterrupted human viewing and physical-device coverage remain review limitations. Deployment awaits human review.
 
 ## Creative direction
 
@@ -26,9 +26,9 @@ The desired feeling is: “Yesterday that chair was by the door. This evening it
 
 7. **Include occasional, quiet coincidences.** A leaf touches the water and drifts away. A fish briefly disturbs a reflection. Evening light catches a window as the clouds part. Conditions should make these moments possible, and they should remain incidental enough that noticing one feels personal. Do not start a special event when a visitor arrives or build urgency around seeing it.
 
-## First two picks
+## First two picks — implemented
 
-The implementation order below starts with weather traces, then cottage life. This is a recommendation for the next work, not a commitment to implement all seven ideas at once.
+The first implementation sequence was weather traces, then cottage life. Both are now present in the checkout. These releases do not commit the project to implementing all seven ideas at once.
 
 | Priority | Addition | First useful release | Why start here |
 | --- | --- | --- | --- |
@@ -42,6 +42,14 @@ Detailed plans:
 
 Morning mist belongs to a later weather phase because it needs convincing depth and shoreline occlusion. A movable chair and visible resident belong to a later cottage phase because they need authored routes, handling actions, occlusion, and character art. The first releases should establish the systems and visual restraint those extensions depend on.
 
+## Familiar bird and daily habits — implemented for review
+
+The feature branch gives the existing bird a preferred oak perch, a sheltered resting location, and a quiet routine after nest construction finishes. It also includes occasional roof visits and a recognizable call driven by shared action timing. See the [combined viewing evidence](docs/engagement-validation/README.md) and [bird validation](docs/bird-validation/README.md). The oak art pilot established the routes and small visual footprint before they were connected to the routine.
+
+The [familiar bird implementation plan](BIRD_FAMILIARITY_IMPLEMENTATION_PLAN.md) details the art pilot, routine, version-4 migration, legacy nest handover, shared timing, occlusion, display modes, field-note facts, audio, delivery milestones, and acceptance checks. It preserves the completed nest and defers eggs, breeding, aging, and a complete species lifecycle to a separate researched plan.
+
+After the bird establishes a useful history, local “Since you were here” notes are the likely next engagement addition. Image export, wider ambience, mist, a visible resident, and incidental events remain separate options.
+
 ## Shared implementation principles
 
 - **One world and one history.** Consequential changes originate in the server simulation and survive restarts and unobserved time. Browsers sample that history rather than creating their own versions.
@@ -52,13 +60,15 @@ Morning mist belongs to a later weather phase because it needs convincing depth 
 - **Explicit limits.** Surface moisture is initially an artistic response model, not a watershed simulation. An implied resident is initially a small routine model, not a complete human lifecycle.
 - **Graceful degradation.** Optional art bundles must fail independently without revealing repaired backgrounds, duplicate windows, or broken foliage. Keep the existing original-painting fallback.
 
-## Proposed sequence and review points
+## Sequence and review points
 
 1. Build a wet-stone/path visual study with dry, rainy, and drying states. Choose its masks and restrained tonal range at normal viewing size.
 2. Implement deterministic surface memory and snapshot integration; complete the puddle and drip treatment, migration, and validation.
 3. Prepare one cottage window with independent light control. Review it at day, dusk, night, and intermediate blends before cutting more assets.
 4. Add the cottage's durable routine and committed action timing. Expand to the second room, one opening casement, and state-driven smoke.
-5. Review the two features together over a complete world day and several weather changes. Adjust density and timing before choosing another idea.
+5. Review the two features together over a complete world day and several weather changes. Adjust density and timing before expanding engagement work.
+
+Steps 1–4 are implemented. Step 5 has sampled full-day evidence, short real-speed recordings, and an elapsed full-day background run with documented observation gaps. The bird plan's oak pilot, persistent routine, roof habit, synchronized call, and automated release validation are implemented for review. Complete human viewing/device review before deployment.
 
 Success is visible in the experience: two visits show believable continuity, a short visit can remain quiet, and a still frame retains the painting's original character. Validate this with paired captures, short real-speed recordings, deterministic state checks, and a small qualitative viewing review. Session length or interaction count alone would not establish that the artistic direction works.
 

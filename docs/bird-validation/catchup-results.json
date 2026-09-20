@@ -1,0 +1,146 @@
+{
+  "node": "v26.7.0",
+  "epoch": 1800000000000,
+  "results": [
+    {
+      "realDays": 1,
+      "elapsedMs": 15.702375,
+      "yields": 0,
+      "birdStateBytes": 616,
+      "eventCount": 426,
+      "events": [
+        {
+          "type": "bird.action-completed",
+          "count": 130
+        },
+        {
+          "type": "bird.action-started",
+          "count": 130
+        },
+        {
+          "type": "bird.habit-noticed",
+          "count": 1
+        },
+        {
+          "type": "cottage.casement",
+          "count": 58
+        },
+        {
+          "type": "cottage.hearth",
+          "count": 49
+        },
+        {
+          "type": "cottage.light",
+          "count": 48
+        },
+        {
+          "type": "nest.material-delivered",
+          "count": 9
+        },
+        {
+          "type": "world.opened",
+          "count": 1
+        }
+      ],
+      "activeFraction": 0.00885648148148148,
+      "calls": 32,
+      "roofVisits": 0
+    },
+    {
+      "realDays": 30,
+      "elapsedMs": 248.94449999999998,
+      "yields": 0,
+      "birdStateBytes": 612,
+      "eventCount": 10951,
+      "events": [
+        {
+          "type": "bird.action-completed",
+          "count": 3191
+        },
+        {
+          "type": "bird.action-started",
+          "count": 3191
+        },
+        {
+          "type": "bird.habit-noticed",
+          "count": 1
+        },
+        {
+          "type": "bird.roof-noticed",
+          "count": 1
+        },
+        {
+          "type": "cottage.casement",
+          "count": 1637
+        },
+        {
+          "type": "cottage.hearth",
+          "count": 1460
+        },
+        {
+          "type": "cottage.light",
+          "count": 1460
+        },
+        {
+          "type": "nest.material-delivered",
+          "count": 9
+        },
+        {
+          "type": "world.opened",
+          "count": 1
+        }
+      ],
+      "activeFraction": 0.007346296296296296,
+      "calls": 736,
+      "roofVisits": 32
+    },
+    {
+      "realDays": 365,
+      "elapsedMs": 2976.6391670000003,
+      "yields": 10,
+      "birdStateBytes": 618,
+      "eventCount": 132101,
+      "events": [
+        {
+          "type": "bird.action-completed",
+          "count": 38286
+        },
+        {
+          "type": "bird.action-started",
+          "count": 38286
+        },
+        {
+          "type": "bird.habit-noticed",
+          "count": 1
+        },
+        {
+          "type": "bird.roof-noticed",
+          "count": 1
+        },
+        {
+          "type": "cottage.casement",
+          "count": 19989
+        },
+        {
+          "type": "cottage.hearth",
+          "count": 17764
+        },
+        {
+          "type": "cottage.light",
+          "count": 17764
+        },
+        {
+          "type": "nest.material-delivered",
+          "count": 9
+        },
+        {
+          "type": "world.opened",
+          "count": 1
+        }
+      ],
+      "activeFraction": 0.007232699137493658,
+      "calls": 8724,
+      "roofVisits": 311
+    }
+  ]
+}

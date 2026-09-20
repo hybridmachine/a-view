@@ -10,6 +10,8 @@ aside{position:fixed;top:14px;left:14px;width:290px;max-height:calc(100vh - 28px
 <aside><h1>Sky study</h1><p>Fixed inputs, no persisted world changes. Drag the painting to pan. H hides controls.</p>
 <p id="startup-message" role="status" hidden></p>
 <label>Fixture <select id="fixture"></select></label>
+<label>Bird action seconds <input id="birdTime" type="range" min="0" max="9" step=".01" value="0"></label>
+<label><input id="birdGuides" type="checkbox"> Show bird anchors, routes, and fixed bark</label>
 <label>Surface memory <select id="surface"><option value="dry">Dry ground</option><option value="wet">After rain</option><option value="drying">Drying</option></select></label>
 <label>Main room light <input id="mainLight" type="range" min="0" max="1" step=".05" value="0"></label>
 <label>Second room light <input id="secondLight" type="range" min="0" max="1" step=".05" value="0"></label>

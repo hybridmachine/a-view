@@ -1,0 +1,102 @@
+{
+  "results": [
+    {
+      "name": "All bird routes and perches render through day/night",
+      "pass": true,
+      "detail": {
+        "pass": true,
+        "count": 240
+      }
+    },
+    {
+      "name": "Bird display: pause",
+      "pass": true
+    },
+    {
+      "name": "Bird display: reduced",
+      "pass": true
+    },
+    {
+      "name": "Bird display: resume",
+      "pass": true
+    },
+    {
+      "name": "Bird display: fallback",
+      "pass": true
+    },
+    {
+      "name": "Bird survives original-painting fallback and GPU restoration",
+      "pass": true,
+      "detail": {
+        "fallback": true,
+        "restored": true
+      }
+    },
+    {
+      "name": "Fixed bark fully hides shelter arrival but preserves approach",
+      "pass": true,
+      "detail": {
+        "hidden": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "Bird scene stays within 30 fps draw budget",
+      "pass": true,
+      "detail": {
+        "baseline": {
+          "median": 0.19999998807907104,
+          "p95": 0.8999999761581421
+        },
+        "bird": {
+          "median": 0.20000001788139343,
+          "p95": 1.0999999940395355
+        },
+        "scratchBytes": 36864
+      }
+    },
+    {
+      "name": "Two visitors draw identical committed bird and life pixels",
+      "pass": true
+    },
+    {
+      "name": "Paused bird pixels and description survive a newer committed snapshot",
+      "pass": true
+    },
+    {
+      "name": "Routine bird commits do not light the unread note dot",
+      "pass": true
+    },
+    {
+      "name": "Resume shows the newly committed resting place",
+      "pass": true
+    },
+    {
+      "name": "Private studies omit bird observations",
+      "pass": true
+    },
+    {
+      "name": "Return to live restores the shared bird observation",
+      "pass": true
+    },
+    {
+      "name": "Reduced-motion visitor text explains the held resting pose",
+      "pass": true
+    },
+    {
+      "name": "Native Web Audio schedules and cancels the shared phrase",
+      "pass": true,
+      "detail": {
+        "scheduled": true,
+        "canceled": true,
+        "deduplicated": true,
+        "offsetMs": 200
+      }
+    },
+    {
+      "name": "No uncaught browser errors",
+      "pass": true,
+      "detail": []
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { sampleWind, WIND_MEAN } from './wind.js';
 import { LAKESIDE_FOLIAGE } from './lakeside-foliage.js';
 import { LAKESIDE_WEATHER } from './lakeside-weather.js';
 import { LAKESIDE_COTTAGE } from './lakeside-cottage.js';
+import { LAKESIDE_BIRD } from './lakeside-bird.js';
 // All durable actions use server milliseconds. Calendar progress is a separate domain.
 export const RATE = 365 / 30;
 export const WORLD_DAY = 86_400_000;
@@ -22,6 +23,7 @@ export const SCENES = [{
   foliage: LAKESIDE_FOLIAGE,
   surfaceWeather: LAKESIDE_WEATHER,
   cottageLife: LAKESIDE_COTTAGE,
+  birdLife: LAKESIDE_BIRD,
   sky: {
     version: 1, seed: 617, atlasSize: [2048, 1024],
     assets: {

@@ -32,3 +32,18 @@ docs/cottage-validation/*.png
 !docs/cottage-validation/open-casement.png
 !docs/cottage-validation/portrait-390.png
 docs/cottage-validation/*.webm
+
+# Regenerable bird/review matrices and real-speed clips; retain review frames.
+docs/bird-validation/*.png
+!docs/bird-validation/oak-perch.png
+!docs/bird-validation/roof-perch.png
+!docs/bird-validation/routes.png
+!docs/bird-validation/portrait-390.png
+!docs/bird-validation/portrait-pan-0.png
+docs/bird-validation/*.webm
+docs/engagement-validation/*.png
+!docs/engagement-validation/afternoon.png
+!docs/engagement-validation/after-rain.png
+!docs/engagement-validation/dusk.png
+!docs/engagement-validation/portrait.png
+docs/engagement-validation/*.webm

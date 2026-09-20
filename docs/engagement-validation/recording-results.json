@@ -1,0 +1,22 @@
+{
+  "baselineRoot": "/private/tmp/a-view-bird-baseline.yAf8sc",
+  "worldDayRealMs": 7101370,
+  "sampleCount": 711,
+  "errors": [],
+  "eventsByType": {
+    "world.opened": 1,
+    "nest.material-delivered": 9,
+    "cottage.casement": 5,
+    "cottage.hearth": 4,
+    "cottage.light": 4
+  },
+  "realtime": null,
+  "recording": {
+    "fixtures": [
+      "afternoon",
+      "dusk",
+      "after-rain"
+    ],
+    "secondsPerFixture": 12
+  }
+}

@@ -6,11 +6,14 @@ import {loadWeatherAssets, WeatherRenderer} from './weather-renderer.js';
 import {sampleSurface, surfaceFixture, dripPose} from '/shared/surface-weather.js';
 import {loadCottageAssets, CottageRenderer} from './cottage-renderer.js';
 import {sampleCottage, cottageFixture, smokePuffs} from '/shared/cottage.js';
+import {sampleBird} from '/shared/bird.js';
+import {BirdRenderer} from './bird-renderer.js';
 
 export class Painting {
   constructor(canvas, lifeCanvas, { scene = SCENES[0], fallback = document.querySelector('#fallback') } = {}) {
     this.canvas=canvas;this.lifeCanvas=lifeCanvas;this.ctx=lifeCanvas.getContext('2d');this.pan=.38;
     this.scene=scene;this.fallback=fallback;this.ready=false;this.generation=0;this.disposed=false;
+    this.birdRenderer=new BirdRenderer(scene.birdLife??null);this.birdActive=false;
     this.media=matchMedia('(prefers-reduced-motion: reduce)');this.motion=!this.media.matches;
     this.frozenMotion=null;this.lastMotion=null;
     this.motionChanged=event=>{
@@ -152,7 +155,13 @@ export class Painting {
         this.drawReeds(c,w,seconds);
       }
       this.drawNest(snapshot.world.nest,c);
-      if(!study)this.drawBird(snapshot.world.action,now,c,seconds);
+      this.birdActive=false;
+      const bird=preview?.bird??(!study&&snapshot.world.bird?{state:snapshot.world.bird,now}:null);
+      if(bird){
+        this.birdPose=sampleBird(bird.state,snapshot.world.action,bird.now,{reducedMotion:!this.motion});
+        if(this.birdPose?.legacy&&c.elevation<-.12)this.birdActive=this.birdRenderer.valid;
+        else this.birdActive=this.birdRenderer.draw(this.ctx,this.birdPose,c.light,(x,y)=>this.point(x,y),this.scale,{motion:this.motion});
+      }else if(!study)this.drawBird(snapshot.world.action,now,c,seconds);
       if(this.motion&&!study)this.drawDistantBirds(c,seconds);
       if(w.rain>.05)this.drawRain(w,seconds,c);
       if(this.motion&&this.weatherRenderer&&this.surfaceState)this.drawDrips(this.surfaceState,w,seconds,c);
