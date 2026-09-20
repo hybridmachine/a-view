@@ -57,7 +57,7 @@ export async function loadWeatherAssets(scene) {
 export class WeatherRenderer {
   constructor(gl, scene, images) {
     this.gl=gl; this.scene=scene; this.config=validateWeatherConfig(scene.surfaceWeather, scene);
-    this.textures=[]; this.shaders=[]; this.locations=new Map(); this.attribute=-1;
+    this.textures=[]; this.shaders=[]; this.locations=new Map(); this.attribute=-1; this.firstFrame=true;
     try {
       if (Math.max(...this.config.atlasSize)>gl.getParameter(gl.MAX_TEXTURE_SIZE) || gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)<2) throw new Error('Insufficient weather texture capacity');
       this.program=gl.createProgram();
@@ -86,7 +86,7 @@ export class WeatherRenderer {
     finally {gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false); gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL,gl.BROWSER_DEFAULT_WEBGL);}
   }
   location(name) {if (!this.locations.has(name)) this.locations.set(name,this.gl.getUniformLocation(this.program,name)); return this.locations.get(name);}
-  draw({calendar,weather,surface,motionSeconds,crop,offset}) {
+  draw({calendar,weather,surface,motionSeconds,crop,offset,diagnostics=false}) {
     if (!surface) return;
     const gl=this.gl; gl.useProgram(this.program); gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);
     gl.enableVertexAttribArray(this.attribute); gl.vertexAttribPointer(this.attribute,4,gl.FLOAT,false,16,0);
@@ -101,7 +101,8 @@ export class WeatherRenderer {
         gl.uniform1f(this.location('amount'),surface[patch.store]); gl.uniform1f(this.location('puddle'),patch.store==='puddleStorage'?1:0);
         gl.drawArrays(gl.TRIANGLES,i*6,6);
       });
-      if (gl.getError()!==gl.NO_ERROR) throw new Error('Weather draw failed');
+      if ((this.firstFrame||diagnostics) && gl.getError()!==gl.NO_ERROR) throw new Error('Weather draw failed');
+      this.firstFrame=false;
     } finally {gl.disable(gl.BLEND);gl.disableVertexAttribArray(this.attribute);}
   }
   dispose() {

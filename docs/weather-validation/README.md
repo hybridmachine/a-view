@@ -3,7 +3,7 @@
 Validated locally September 19–20, 2026, using Node 26.7.0 and Chrome 153 on Apple M1/ANGLE Metal. The server used a disposable SQLite database on port 4174. No production world or deployment was changed.
 
 - `npm run check`: passed.
-- `npm test`: 51 tests passed, including canonical/partial tick equivalence, wet/dry behavior, bounded catch-up, migration preservation, and private-study isolation.
+- `npm test`: 52 tests passed, including canonical/partial tick equivalence, wet/dry behavior, bounded catch-up, migration preservation, and private-study isolation.
 - `check-weather-browser.mjs`: 16 checks passed; see [results](browser-results.json).
 - Existing sky shader/lifecycle checks: passed; see [results](sky-browser-results.json).
 - Existing foliage checks: 40 passed; see [results](foliage-browser-results.json).
@@ -28,3 +28,7 @@ This first release uses one path patch, one exposed stone face, one puddle, and 
 The full source painting and existing foliage bases remain intact. Wet art is optional and adds no runtime package dependency. Missing environmental state or unsupported rules omit surface effects; private studies use their own fixtures. Automatic announcements remain unchanged during gradual drying.
 
 Safari, Firefox, and physical mobile-device verification remain for human/device review. Mist, lake accumulation, and reflected cloud geometry are deferred as specified in the plan.
+
+## Review follow-up
+
+The catch-up response regression is now covered by an isolated HTTP test with a world one real year behind: both JSON and SSE return retryable HTTP 503 until advancement completes, then JSON returns a current snapshot. Optional ANGLE Metal flags are selected only with `SKY_GPU=metal`. Every browser test page reports uncaught errors. GPU error polling occurs on the first weather frame or explicit diagnostics rather than every frame. The 52-test suite and all 16 focused browser checks pass after these fixes.

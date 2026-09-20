@@ -1,7 +1,7 @@
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{}),args:['--enable-gpu','--use-gl=angle','--use-angle=metal']});
+const browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{}),...(process.env.SKY_GPU==='metal'?{args:['--enable-gpu','--use-gl=angle','--use-angle=metal']}:{} )});
 const base=process.env.SKY_PREVIEW_URL||'http://127.0.0.1:4174',directory='docs/weather-validation';
 await mkdir(directory,{recursive:true});
 const results=[],errors=[];
@@ -73,7 +73,7 @@ try{
     await p.weatherTask;await p.foliageTask;skyStudy.render();return removed&&!!p.weatherRenderer&&p.gl.getError()===0;
   });check('Context restoration reconstructs the bundle',restore);
   for(const failure of ['missing','mismatch','delayed-dispose']){
-    const isolated=await browser.newPage();let release;const gate=new Promise(resolve=>release=resolve);
+    const isolated=await browser.newPage();isolated.on('pageerror',error=>errors.push(`${failure}: ${error.message}`));let release;const gate=new Promise(resolve=>release=resolve);
     await isolated.route('**/lakeside-weather-v1/*.png',async route=>{
       if(failure==='delayed-dispose'){await gate;await route.continue();}
       else if(failure==='missing')await route.abort();
@@ -91,6 +91,7 @@ try{
     await isolated.close();
   }
   const visitor=await browser.newPage();
+  visitor.on('pageerror',error=>errors.push(`visitor: ${error.message}`));
   const seed=await (await visitor.request.get(`${base}/api/world`)).json();
   let response=structuredClone(seed);
   await visitor.route('**/api/world',route=>route.fulfill({json:response}));

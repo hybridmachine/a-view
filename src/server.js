@@ -17,8 +17,9 @@ const server = createServer(async (req, res) => {
     res.setHeader('Referrer-Policy', 'same-origin');
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); res.end(); return; }
     if (url.pathname === '/api/world') {
+      const snapshot = store.snapshot();
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-      res.end(JSON.stringify(store.snapshot())); return;
+      res.end(JSON.stringify(snapshot)); return;
     }
     if (url.pathname === '/api/stream') {
       const snapshot = store.snapshot();
@@ -52,6 +53,6 @@ const tick = setInterval(() => {
   } catch(error) { console.error('World update failed:', error); }
 }, 2000);
 const port = Number(process.env.PORT || 4173);
-server.listen(port, '127.0.0.1', () => console.log(`A View is open at http://127.0.0.1:${port}`));
+server.listen(port, '127.0.0.1', () => console.log(`A View is open at http://127.0.0.1:${server.address().port}`));
 function shutdown() { clearInterval(tick); for (const client of clients) client.end(); server.close(() => { store.close(); process.exit(0); }); }
 process.on('SIGINT', shutdown); process.on('SIGTERM', shutdown);
