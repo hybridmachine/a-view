@@ -157,6 +157,24 @@ test('two enabled clients map the same phrase to shared time despite different a
   await a.audio.toggle();await b.audio.toggle();
 });
 
+test('phrase cleanup runs once across natural completion, cancellation, and late ended events',async()=>{
+  const {audio}=audioHarness();await audio.toggle();
+  audio.update(1,0,display(callingBird()));
+  const voices=[...audio.phraseNodes],ended=voices.map(({osc})=>osc.onended),disconnects=[];
+  for(const [i,{osc,gain}]of voices.entries()){
+    osc.disconnect=()=>{disconnects.push(`osc-${i}`);if(i===1)throw new Error('Node already disconnected');};
+    gain.disconnect=()=>{disconnects.push(`gain-${i}`);};
+  }
+  ended[0]();assert.equal(audio.phraseNodes.size,2);
+  voices[1].osc.stop=()=>{assert.equal(voices[1].osc.onended,null);throw new Error('Already stopped');};
+  audio.hold();audio.hold();
+  for(const end of ended)end();
+  assert.equal(audio.phraseNodes.size,0);
+  assert.ok(voices.every(({osc})=>osc.onended===null));
+  assert.deepEqual(disconnects,['osc-0','gain-0','osc-1','gain-1','osc-2','gain-2']);
+  await audio.toggle();
+});
+
 test('mute, pause, study, hidden tabs, and invalid leases cancel queued sound without replay',async()=>{
   for(const mode of ['mute','pause','study','hidden','lease','boundary','unavailable']){
     const {audio,oscillators,setHidden}=audioHarness(),bird=callingBird();await audio.toggle();

@@ -3,11 +3,11 @@
 Validated September 20, 2026, on Node 26.7.0 and Chrome 153 / ANGLE Metal on Apple M1, against disposable SQLite worlds. No production state or deployment changed.
 
 - `npm run check`: passed.
-- `npm test`: 76 passed, including migration from active/future/final/built/stale version-3 worlds, the existing version-1/2 chain, restart during flight, transactional failure, full causal history equality, roof opportunities, and bounded audio cancellation.
+- `npm test`: 77 passed, including migration from active/future/final/built/stale version-3 worlds, the existing version-1/2 chain, restart during flight, transactional failure, full causal history equality, roof opportunities, and bounded audio cancellation.
 - Focused bird browser checks: [18 passed](browser-results.json), including 240 route/light/phase draws, shelter coverage, pause/resume, reduced motion, studies, fallback/context restoration, matching two-client pixels, quiet notes, and native Web Audio scheduling/cancellation.
 - Existing [sky](sky-browser-results.json), [visitor display](display-results.json), [foliage](foliage-browser-results.json), [weather](weather-browser-results.json), and [cottage](cottage-browser-results.json) suites passed. These are new regression results copied here; earlier feature evidence remains unchanged.
 
-Review follow-up: bird activity now clears when construction rendering is skipped at night, when debug/study views omit the bird, and while the settled bird is hidden in shelter. The added browser regression checks each transition and the return to a visible perch. Event insertion reuses one prepared statement per catch-up transaction. Syntax checks, all 76 tests, the focused browser suite, and the catch-up benchmark were rerun after these fixes; the other browser reports above are from the initial implementation.
+Review follow-up: bird activity now clears when construction rendering is skipped at night, when debug/study views omit the bird, and while the settled bird is hidden in shelter. The added browser regression checks each transition and the return to a visible perch. Event insertion reuses one prepared statement per catch-up transaction. The catch-up benchmark was rerun after the insert change. Audio cleanup now detaches `onended` before stopping a voice and retires each voice once; a regression covers natural completion, cancellation, late callbacks, and cleanup errors. Syntax checks, all 77 tests, and the focused browser suite passed on the final fixes, including native cancellation with time for queued ended events to dispatch. The other browser reports above are from the initial implementation.
 
 ## Artwork and timing
 

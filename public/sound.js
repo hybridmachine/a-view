@@ -43,8 +43,14 @@ export class Ambience {
     this.lastGainAt=time;this.gainTarget=target;
   }
   hold(){
-    for(const {osc,gain}of this.phraseNodes){try{osc.stop();}catch{}osc.disconnect();gain.disconnect();}
-    this.phraseNodes.clear();
+    for(const nodes of this.phraseNodes)this.releasePhrase(nodes,true);
+  }
+  releasePhrase(nodes,stop=false){
+    if(!this.phraseNodes.delete(nodes))return;
+    const {osc,gain}=nodes;osc.onended=null;
+    if(stop){try{osc.stop();}catch{}}
+    try{osc.disconnect();}catch{}
+    try{gain.disconnect();}catch{}
   }
   syncBird(display){
     const action=display?.bird?.pending;
@@ -66,7 +72,7 @@ export class Ambience {
       osc.frequency.setValueAtTime(2000+i*220,start);osc.frequency.exponentialRampToValueAtTime(3200-i*200,start+.07);osc.frequency.exponentialRampToValueAtTime(2400,start+.12);
       gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(.055,start+.025);gain.gain.exponentialRampToValueAtTime(.0001,start+.14);
       const nodes={osc,gain};this.phraseNodes.add(nodes);
-      osc.onended=()=>{osc.disconnect();gain.disconnect();this.phraseNodes.delete(nodes);};
+      osc.onended=()=>this.releasePhrase(nodes);
       osc.connect(gain);gain.connect(this.master);osc.start(start);osc.stop(start+.16);
     }
   }

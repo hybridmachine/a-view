@@ -128,9 +128,11 @@ try{
     try{
       await audio.toggle();const before=audio.context.currentTime;
       audio.update(1,0,{bird,now:5800,active:true,validUntil:6600});
-      const size=audio.phraseNodes.size,offset=(starts[0]-before)*1000;
-      audio.hold();const canceled=audio.phraseNodes.size===0;
+      const voices=[...audio.phraseNodes],size=voices.length,offset=(starts[0]-before)*1000;
+      audio.hold();const canceled=audio.phraseNodes.size===0&&voices.every(({osc})=>osc.onended===null);
       audio.update(1,0,{bird,now:5900,active:true,validUntil:6600});
+      // Allow canceled native oscillators to dispatch any queued ended events.
+      await new Promise(resolve=>setTimeout(resolve,700));
       return {scheduled:size===3,canceled,deduplicated:starts.length===3,offsetMs:offset};
     }finally{if(audio.enabled)await audio.toggle();await audio.context?.close();}
   });check('Native Web Audio schedules and cancels the shared phrase',nativeAudio.scheduled&&nativeAudio.canceled&&nativeAudio.deduplicated&&Math.abs(nativeAudio.offsetMs-200)<100,nativeAudio);
