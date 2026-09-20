@@ -51,7 +51,7 @@ try{
   }
   await page.setViewportSize({width:390,height:844});
   await page.screenshot({path:join(directory,'portrait.png')});
-  const report={baselineRoot:root,worldDayRealMs:duration,sampleCount:samples.length,errors,
+  const report={worldDayRealMs:duration,sampleCount:samples.length,errors,
     eventsByType:Object.fromEntries([...new Set(events.map(e=>e.type))].map(type=>[type,events.filter(e=>e.type===type).length])),
     samples:samples.map(s=>({at:s.serverTime,hour:s.calendar.hour,light:s.calendar.light,rain:s.weather.rain,wetness:s.world.environment.pathWetness,rooms:s.world.cottage.rooms,hearth:s.world.cottage.hearth.on,casement:s.world.cottage.casement})),
     realtime:null};
