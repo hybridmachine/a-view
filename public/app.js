@@ -3,6 +3,7 @@ import { Painting } from './painting.js';
 import { Ambience } from './sound.js';
 import { WorldClient } from './world-client.js';
 import { sceneText } from './scene-description.js';
+import {cottageDescription} from '/shared/cottage.js';
 
 const $=selector=>document.querySelector(selector);
 const icons={
@@ -90,7 +91,8 @@ function updateLabels(){
   $('#live-label').textContent=study?'Light study':pausedAt!==null?'View paused':stale?'Connection lost':connection==='live'?'A shared, living world':'Reconnecting';
   $('#live-dot').classList.toggle('offline',connection!=='live'||stale);$('#return-live').hidden=!study;
   if(stale)wake();
-  const {description,announcement}=sceneText(shownSnapshot,now(),{study,paused:pausedAt!==null,disconnected:stale});
+  $('#cottage-detail').textContent=cottageDescription(snapshot.world.cottage)||'A quiet cottage beside the lake.';
+  const {description,announcement}=sceneText(shownSnapshot,now(),{study,paused:pausedAt!==null,disconnected:stale,staticCottage:!painter.cottageActive});
   if($('#scene-description').textContent!==description)$('#scene-description').textContent=description;
   if($('#scene-announcement').textContent!==announcement)$('#scene-announcement').textContent=announcement;
 }

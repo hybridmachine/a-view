@@ -1,6 +1,6 @@
 # Small signs of cottage life
 
-Status: implementation proposal, September 19, 2026. No changes in this plan are implemented yet. This is the second priority in [the engagement plan](ENGAGEMENT_PLAN.md), following [weather traces](WEATHER_TRACES_IMPLEMENTATION_PLAN.md).
+Status: implemented on `codex/cottage-life`, September 20, 2026; awaiting PR review. See [validation evidence](docs/cottage-validation/README.md). The sections below retain the implementation design. This is the second priority in [the engagement plan](ENGAGEMENT_PLAN.md), following [weather traces](WEATHER_TRACES_IMPLEMENTATION_PLAN.md).
 
 ## Intended experience and first release
 
@@ -10,7 +10,7 @@ The first release includes two independently controlled room lights, one opening
 
 The cottage should remain unremarkable for long stretches. A routine follows daylight and weather and persists regardless of visitors. Opening the page never starts a performance.
 
-## Current implementation and dependencies
+## Starting implementation and dependencies
 
 - `shared/world.js` currently gives the cottage only door and chimney coordinates. There are no authored window masks, room identities, resident state, or action paths.
 - Amber window light is already painted into the original night image and retained in the registered night foreground. Adding an independent glow on top would leave supposedly dark rooms lit. Independent control requires complete local replacement of that existing emission.
@@ -172,3 +172,13 @@ Run `npm run check`, `npm test`, applicable existing sky/foliage/display browser
 The next cottage milestone is a single visible walk from the door to a nearby resting place, followed by a return. Author and validate the route, terrain perspective, doorway occlusion, gait, pauses, and actor identity before expanding destinations. Paths use real travel time and can be conditioned on rain or damp ground.
 
 A movable chair comes after that actor can carry and place it. Persist its location, require pickup/carry/placement actions, and keep it at its last committed location while the resident is elsewhere. A chair facing the lake then becomes evidence of a life that actually unfolded, rather than a decorative random change.
+
+## Implemented choices
+
+The release uses two 256 × 256 atlases and six small draws. The left casement has a fixed hinge and four-second shallow opening movement; a generated dark recess is confined beneath it. Canonical foreground paint supplies all stonework, frames, and moving panel texture. Neutral repairs replace the original night emission before separate light paint is added.
+
+Version 3 adds one interior resident, independent room states, a casement, and bounded hearth history. Decisions occur every 30 real seconds; tasks take 8–20 seconds. Lights and reopening have a three-minute minimum dwell; hearth changes have a five-minute dwell. An opening finishes before a weather-driven closing begins. Wind thresholds use the existing model's actual range: below 0.35 to open, above 0.44 to close.
+
+The shared scheduler uses environment → bird completion → cottage completion → cottage decision for ties. `nextCommitAt` limits client display time across all discrete changes. Catch-up processes at most 120,000 boundaries and 300,000 environment ticks per call; retryable HTTP 503 withholds inconsistent snapshots. Current state contains one pending task and one prior burn interval, with no persisted particles.
+
+All cottage transitions have structured history, but only the first main-room light each world day enters the normal note query. Routine decisions create no event rows. Private studies select fixed cottage poses and omit smoke. Missing or invalid cottage art restores the original static cottage and identifies that limitation in accessible text.

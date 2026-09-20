@@ -43,7 +43,8 @@ test('unwatched catch-up matches regular execution without duplicate material',(
   for(let time=epoch;time<epoch+60*60*1000;time+=2000)regular.advance(time);
   const a=regular.snapshot(final),b=catchup.snapshot(final);
   assert.deepEqual(a,b);assert.equal(a.world.nest.materials,12);assert.equal(a.world.nest.stage,'built');
-  assert.equal(a.events.length,10);assert.equal(a.world.action,null);regular.close();catchup.close();
+  assert.equal(regular.db.prepare("SELECT count(*) AS n FROM events WHERE type IN ('world.opened','nest.material-delivered')").get().n,10);
+  assert.equal(a.world.action,null);regular.close();catchup.close();
 });
 test('all visitors sample identical weather, seasons, and entity state',()=>{
   const store=new WorldStore(':memory:',epoch),a=store.snapshot(epoch+35_000),b=store.snapshot(epoch+35_000);

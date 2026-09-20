@@ -1,6 +1,6 @@
 # A View — quiet engagement
 
-Status: planning proposal, September 19, 2026. This document records the brainstorm and the proposed order of work; it does not describe implemented features.
+Status: brainstorm recorded September 19, 2026. Weather traces merged in [PR #5](https://github.com/hybridmachine/a-view/pull/5) on September 20. Cottage life is implemented on `codex/cottage-life` and is being validated for review. The remaining ideas are future work; deployment awaits human review.
 
 ## Creative direction
 
