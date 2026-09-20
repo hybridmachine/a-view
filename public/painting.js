@@ -26,7 +26,7 @@ export class Painting {
     this.contextLost=event=>{
       event.preventDefault();this.generation++;this.ready=false;
       this.hideGPU();this.ctx.clearRect(0,0,this.width,this.height);
-      this.renderer?.dispose();this.renderer=null;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;
+      this.renderer?.dispose();this.renderer=null;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.pendingFoliage=null;this.foliageState=null;
     };
     this.contextRestored=()=>{if(!this.disposed)this.init();};
     addEventListener('resize',this.resize);
@@ -43,25 +43,35 @@ export class Painting {
     const generation=++this.generation;
     this.ready=false;this.hideGPU();this.renderer?.dispose();this.renderer=null;
     this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.foliageFailure=null;this.completeFrame=false;
+    this.pendingFoliage=null;this.foliageState=null;this.foliageTask=Promise.resolve();
     // Original plates load independently; sky failure cannot reject this fallback.
     this.fallbackImages??=Promise.allSettled([loadImage(this.scene.assets.day),loadImage(this.scene.assets.night)]);
     try{
       const gl=this.canvas.getContext('webgl',{alpha:false,antialias:false,powerPreference:'low-power'});this.gl=gl;
       if(!gl||gl.isContextLost())return;
-      const [images,foliage]=await Promise.all([loadSkyAssets(this.scene),loadFoliageAssets(this.scene).then(images=>({images}),error=>({error}))]);
+      // Start both loads, but optional foliage must never delay the intact sky.
+      // Catch immediately: foliage may reject before the sky has finished.
+      const foliageLoad=loadFoliageAssets(this.scene).then(images=>({images}),error=>({error}));
+      const images=await loadSkyAssets(this.scene);
       if(this.disposed||generation!==this.generation||gl.isContextLost())return;
       this.intactForeground=images.slice(0,2);
-      if(foliage.error)this.foliageFailure=foliage.error.message;
-      if(foliage.images){
-        try{this.foliageRenderer=new FoliageRenderer(gl,this.scene,foliage.images.slice(2));}
-        catch(error){this.foliageFailure=error.message;}
-      }
-      this.renderer=new SkyRenderer(gl,this.scene,this.foliageRenderer?[...foliage.images.slice(0,2),...images.slice(2)]:images);
+      this.renderer=new SkyRenderer(gl,this.scene,images);
       this.ready=true;this.failure=null;
+      this.foliageTask=foliageLoad.then(({images,error})=>{
+        if(this.disposed||generation!==this.generation||gl.isContextLost()||!this.ready)return;
+        if(error)this.foliageFailure=error.message;
+        // Stage CPU assets only. The repaired base and foliage are activated
+        // together inside the next complete render, never between frames.
+        else this.pendingFoliage=images;
+      });
       // Visibility is committed only by the first successful complete render.
     }catch(error){
       if(generation===this.generation&&!this.disposed){this.renderer?.dispose();this.renderer=null;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.failure=error.message;this.hideGPU();console.warn('Dynamic sky unavailable; using original painting.',error);}
     }
+  }
+  restoreIntactForeground(error){
+    this.foliageFailure=error.message;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.foliageState=null;
+    this.renderer.replaceForeground(this.intactForeground);
   }
   render(snapshot,now,study=null,preview=null){
     if(this.disposed||!snapshot)return;
@@ -75,17 +85,26 @@ export class Painting {
     const url=c.light>.5?this.scene.assets.day:this.scene.assets.night;
     if(this.fallback&&this.fallback.getAttribute('src')!==url)this.fallback.src=url;
     if(this.ready&&this.renderer&&!this.gl.isContextLost()){
-      this.cloudState=this.renderer.draw({calendar:c,weather:w,realSeconds,motionSeconds,crop:this.crop,offset:this.offset,
-        moon:preview?.moon,debug:preview?.debug,visibleLayers:preview?.visibleLayers});
+      if(this.pendingFoliage&&!preview?.debug){
+        const images=this.pendingFoliage;this.pendingFoliage=null;
+        try{
+          this.foliageRenderer=new FoliageRenderer(this.gl,this.scene,images.slice(2));
+          this.renderer.replaceForeground(images.slice(0,2));
+          if(this.gl.getError()!==this.gl.NO_ERROR)throw new Error('Foliage foreground upload failed');
+          this.completeFrame=false;
+        }catch(error){this.restoreIntactForeground(error);}
+      }
+      const skyOptions={calendar:c,weather:w,realSeconds,motionSeconds,crop:this.crop,offset:this.offset,
+        moon:preview?.moon,debug:preview?.debug,visibleLayers:preview?.visibleLayers};
+      this.cloudState=this.renderer.draw(skyOptions);
       if(this.foliageRenderer&&!preview?.debug){
         try{
           this.foliageState=this.foliageRenderer.draw({calendar:c,weather:w,motionSeconds,crop:this.crop,offset:this.offset,
             windOverride:preview?.foliageWind,rest:preview?.foliageRest,only:preview?.foliageOnly});
           if(!this.completeFrame&&this.gl.getError()!==this.gl.NO_ERROR)throw new Error('Foliage frame failed');
         }catch(error){
-          this.foliageFailure=error.message;this.foliageRenderer.dispose();this.foliageRenderer=null;this.foliageState=null;
-          this.renderer.replaceForeground(this.intactForeground);
-          this.cloudState=this.renderer.draw({calendar:c,weather:w,realSeconds,motionSeconds,crop:this.crop,offset:this.offset,moon:preview?.moon});
+          this.restoreIntactForeground(error);
+          this.cloudState=this.renderer.draw(skyOptions);
         }
       }
       if(!preview?.debug)this.completeFrame=true;
@@ -107,7 +126,7 @@ export class Painting {
     this.disposed=true;this.generation++;this.ready=false;this.hideGPU();
     removeEventListener('resize',this.resize);this.media.removeEventListener('change',this.motionChanged);
     this.canvas.removeEventListener('webglcontextlost',this.contextLost);this.canvas.removeEventListener('webglcontextrestored',this.contextRestored);
-    this.renderer?.dispose();this.renderer=null;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.fallbackImages=null;
+    this.renderer?.dispose();this.renderer=null;this.foliageRenderer?.dispose();this.foliageRenderer=null;this.intactForeground=null;this.fallbackImages=null;this.pendingFoliage=null;this.foliageState=null;
     this.ctx.clearRect(0,0,this.width,this.height);
   }
   drawNest(nest,c){

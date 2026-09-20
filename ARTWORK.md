@@ -54,9 +54,9 @@ Prepared September 19, 2026. The built-in image-generation tool produced a groun
 | `foliage-day.png`, `foliage-night.png` | 512 × 512 | Registered straight-alpha RGBA atlases, native-resolution subjects, at least four clear texels around each rectangle |
 | `export.json` | JSON | Export version, dimensions, patch count, alpha convention, rest-composite error |
 
-The exporter verifies that the rest composition differs by less than one 8-bit premultiplied color value from the canonical day foreground. Root/twig rows and side seams are pinned by the runtime mesh weights. Selected leaves can change the sky silhouette; selected grass reveals repaired vegetation or lake. The reconstructed background is an artistic approximation limited to a few pixels of travel. All original complete paintings and sky assets remain available as intact fallbacks.
+Before writing exports, the exporter verifies matching day/night coverage in the source foregrounds, repaired bases, and atlases. It checks every pixel of both day and night rest compositions, rejecting color or alpha error above one 8-bit channel value. Color error is measured in premultiplied values, with separate day/night metrics recorded in `export.json`. Root/twig rows and side seams are pinned by the runtime mesh weights. Selected leaves can change the sky silhouette; selected grass reveals repaired vegetation or lake. The reconstructed background is an artistic approximation limited to a few pixels of travel. All original complete paintings and sky assets remain available as intact fallbacks.
 
-Re-export with optional Sharp available: `node scripts/prepare-foliage-assets.mjs`. This also produces the selection overview and a rest-composite inspection image under `docs/foliage-validation/`. The runtime uses no image-processing dependency.
+Re-export with optional Sharp available: `node scripts/prepare-foliage-assets.mjs`. This also produces the selection overview and day/night rest-composite inspection images under `docs/foliage-validation/`. The runtime uses no image-processing dependency.
 
 ### Ground repair edit prompt
 

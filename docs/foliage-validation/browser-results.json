@@ -108,6 +108,78 @@
       }
     },
     {
+      "name": "Atlas top-left remains top-left",
+      "pass": true,
+      "detail": {
+        "name": "Atlas top-left remains top-left",
+        "actual": [
+          255,
+          0,
+          0
+        ],
+        "expected": [
+          255,
+          0,
+          0
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas top-right remains top-right",
+      "pass": true,
+      "detail": {
+        "name": "Atlas top-right remains top-right",
+        "actual": [
+          0,
+          255,
+          0
+        ],
+        "expected": [
+          0,
+          255,
+          0
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas bottom-left remains bottom-left",
+      "pass": true,
+      "detail": {
+        "name": "Atlas bottom-left remains bottom-left",
+        "actual": [
+          0,
+          0,
+          255
+        ],
+        "expected": [
+          0,
+          0,
+          255
+        ],
+        "pass": true
+      }
+    },
+    {
+      "name": "Atlas bottom-right remains bottom-right",
+      "pass": true,
+      "detail": {
+        "name": "Atlas bottom-right remains bottom-right",
+        "actual": [
+          255,
+          255,
+          255
+        ],
+        "expected": [
+          255,
+          255,
+          255
+        ],
+        "pass": true
+      }
+    },
+    {
       "name": "No foliage WebGL errors",
       "pass": true,
       "detail": {
@@ -154,6 +226,75 @@
       "pass": true
     },
     {
+      "name": "Sky renders while foliage is pending (success)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Late foliage activates as a complete frame",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (failure)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Delayed foliage failure leaves the dynamic sky visible",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (dispose)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Stale foliage cannot attach after dispose",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (reinitialize)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Stale foliage cannot attach after reinitialize",
+      "pass": true
+    },
+    {
+      "name": "Sky renders while foliage is pending (context-loss)",
+      "pass": true,
+      "detail": {
+        "visible": true,
+        "intact": true,
+        "moving": true
+      }
+    },
+    {
+      "name": "Stale foliage cannot attach after context-loss",
+      "pass": true
+    },
+    {
+      "name": "Restoration loads fresh foliage after an obsolete pending request",
+      "pass": true
+    },
+    {
       "name": "Missing base-day retains intact dynamic sky",
       "pass": true
     },
@@ -186,6 +327,10 @@
       "pass": true
     },
     {
+      "name": "Fallback preserves disabled cloud layers in the failure frame",
+      "pass": true
+    },
+    {
       "name": "Preview sustains its 30 fps target on this GPU",
       "pass": true,
       "detail": {
@@ -200,11 +345,11 @@
         "submissionMs": {
           "before": {
             "median": 0.09999999403953552,
-            "p95": 0.3999999761581421
+            "p95": 0.19999998807907104
           },
           "after": {
             "median": 0.09999999403953552,
-            "p95": 0.19999998807907104
+            "p95": 0.10000002384185791
           }
         },
         "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
@@ -225,11 +370,11 @@
     "submissionMs": {
       "before": {
         "median": 0.09999999403953552,
-        "p95": 0.3999999761581421
+        "p95": 0.19999998807907104
       },
       "after": {
         "median": 0.09999999403953552,
-        "p95": 0.19999998807907104
+        "p95": 0.10000002384185791
       }
     },
     "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",

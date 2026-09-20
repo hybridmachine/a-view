@@ -4,13 +4,20 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {LAKESIDE_FOLIAGE as config} from '../shared/lakeside-foliage.js';
 import {validateFoliageConfig} from '../shared/foliage.js';
+import {assertMatchingCoverage,verifyFoliageExport} from './foliage-asset-validation.mjs';
 const sharp=createRequire(import.meta.url)('sharp');
 const width=1672,height=941,raw={width,height,channels:4};
 validateFoliageConfig(config,width,height);
 const directory='public/assets/lakeside-foliage-v1';
 await mkdir(directory,{recursive:true});await mkdir('docs/foliage-validation',{recursive:true});
-const day=await sharp('public/assets/lakeside-sky-v1/foreground-day.png').ensureAlpha().raw().toBuffer();
-const night=await sharp('public/assets/lakeside-sky-v1/foreground-night.png').ensureAlpha().raw().toBuffer();
+async function foreground(path){
+  const {data,info}=await sharp(path).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  if(info.width!==width||info.height!==height||info.channels!==4)throw new Error(`Invalid foreground dimensions: ${path}`);
+  return data;
+}
+const day=await foreground('public/assets/lakeside-sky-v1/foreground-day.png');
+const night=await foreground('public/assets/lakeside-sky-v1/foreground-night.png');
+assertMatchingCoverage(day,night,width*height,'Source foreground');
 const repair=await sharp('artwork/lakeside-foliage-v1/ground-repair-source.png').resize(width,height).ensureAlpha().raw().toBuffer();
 const dayLow=await sharp(day,{raw}).blur(8).raw().toBuffer(),nightLow=await sharp(night,{raw}).blur(8).raw().toBuffer();
 const bases=[Buffer.from(day),Buffer.from(night)],sources=[day,night];
@@ -57,29 +64,17 @@ for(const patch of config.patches){
     }
   }
 }
+// Validate both lighting plates and all alpha pairs BEFORE writing any exports.
+const verification=verifyFoliageExport({sources,bases,atlases,width,height,config});
+const stats={version:1,width,height,atlas:config.atlasSize,patches:config.patches.length,alpha:'straight PNG; premultiplied once on upload',
+  restMaxError:Math.max(...verification.map(v=>v.maxError)),restMeanError:Math.max(...verification.map(v=>v.meanError)),
+  rest:Object.fromEntries(verification.map(({rest,...metrics},i)=>[i?'night':'day',metrics]))};
 for(let i=0;i<2;i++){
   await sharp(bases[i],{raw}).png().toFile(`${directory}/base-${i?'night':'day'}.png`);
   await sharp(atlases[i],{raw:{width:aw,height:ah,channels:4}}).png().toFile(`${directory}/foliage-${i?'night':'day'}.png`);
+  await sharp(verification[i].rest,{raw}).png().toFile(`docs/foliage-validation/rest-foreground${i?'-night':''}.png`);
 }
 await sharp(mask,{raw:{width,height,channels:1}}).png().toFile('artwork/lakeside-foliage-v1/selection-mask.png');
-const stats={version:1,width,height,atlas:config.atlasSize,patches:config.patches.length,alpha:'straight PNG; premultiplied once on upload',restMaxError:0,restMeanError:0};
-const rest=Buffer.from(bases[0]);let error=0;
-for(const patch of config.patches){
-  const [left,top,w,h]=patch.bounds,[ax,ay]=patch.rect;
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-    const i=((top+y)*width+left+x)*4,j=((ay+y)*aw+ax+x)*4,a=atlases[0][j+3]/255,b=bases[0][i+3]/255;
-    const outA=a+b*(1-a);rest[i+3]=Math.round(outA*255);
-    for(let c=0;c<3;c++){
-      const premult=atlases[0][j+c]*a+bases[0][i+c]*b*(1-a);
-      rest[i+c]=outA?Math.round(premult/outA):0;
-      const difference=Math.abs(premult-day[i+c]*day[i+3]/255);
-      stats.restMaxError=Math.max(stats.restMaxError,difference);error+=difference;
-    }
-  }
-}
-stats.restMeanError=error/(width*height*3);
-if(stats.restMaxError>1)throw new Error(`Rest reconstruction exceeded one channel value: ${stats.restMaxError}`);
-await sharp(rest,{raw}).png().toFile('docs/foliage-validation/rest-foreground.png');
 const outlines=config.patches.map(p=>{const[x,y,w,h]=p.bounds;return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#ffdb71"/><text x="${x}" y="${y-4}" fill="white" font-size="12">${p.id}</text>`;}).join('');
 await sharp('public/assets/lakeside-day.png').composite([{input:Buffer.from(`<svg width="${width}" height="${height}">${outlines}</svg>`)}]).png().toFile('docs/foliage-validation/selections.png');
 await writeFile(`${directory}/export.json`,JSON.stringify(stats,null,2)+'\n');

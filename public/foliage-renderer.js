@@ -12,6 +12,8 @@ void main(){
   vec2 point=positionUv.xy+vec2(pose.x*weights.x+pose.y*weights.y,pose.z*weights.x);
   vec2 screen=(point/sceneSize-offset)/crop;
   gl_Position=vec4(screen.x*2.-1.,1.-screen.y*2.,0.,1.);
+  // Atlas rows already use image-top coordinates and uploads are unflipped.
+  // Only scene Y is inverted for clip space; inverting atlas V would flip paint.
   uv=positionUv.zw;
 }`;
 export const FOLIAGE_FRAGMENT=`precision mediump float;

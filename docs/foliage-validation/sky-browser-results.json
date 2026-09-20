@@ -497,10 +497,10 @@
     "frames": 180,
     "median": 0.09999999403953552,
     "p95": 0.19999998807907104,
-    "max": 0.4000000059604645,
+    "max": 0.5,
     "stats": {
       "celestialUploads": 7,
-      "uploadMs": 1.300000011920929,
+      "uploadMs": 1.0999999642372131,
       "staticUploads": 7
     },
     "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
