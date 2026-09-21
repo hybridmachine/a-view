@@ -181,12 +181,17 @@ export class SkyRenderer {
     // Cache the actual raster inputs at subpixel / sub-byte precision. This avoids
     // full canvas uploads for calendar changes too small to alter visible detail.
     const quantize=(x,step)=>Math.round(x/step)*step;
-    const rasterBody=body=>body.visible?{
-      x:quantize(body.x*width,.125),y:quantize(body.y*height,.125),
-      matrix:body.matrix.map(x=>quantize(x,.03125)),opacity:quantize(body.opacity,1/255),
-      warmth:quantize(body.warmth??0,1/255),light:body.light?.map(x=>quantize(x,.001)),
-      illumination:quantize(body.illumination??1,1/255),
-    }:null;
+    const rasterBody=body=>{
+      const opacity=quantize(body.opacity,1/255);
+      // Invisible disks must not erase stars. Phase illumination is separate:
+      // a visible new moon still conceals stars with its unlit hemisphere.
+      return body.visible&&opacity>0?{
+        x:quantize(body.x*width,.125),y:quantize(body.y*height,.125),
+        matrix:body.matrix.map(x=>quantize(x,.03125)),opacity,
+        warmth:quantize(body.warmth??0,1/255),light:body.light?.map(x=>quantize(x,.001)),
+        illumination:quantize(body.illumination??1,1/255),
+      }:null;
+    };
     const raster={sun:rasterBody(pose.sun),moon:rasterBody(pose.moon),
       stars:pose.stars.filter(star=>star.visible&&star.opacity>1/510).map(star=>({
         x:quantize(star.x*width,.125),y:quantize(star.y*height,.125),radius:star.radius,opacity:quantize(star.opacity,1/255)}))};

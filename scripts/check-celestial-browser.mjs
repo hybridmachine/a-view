@@ -53,13 +53,21 @@ try{
     const width=p.scene.width,height=p.scene.height;
     const alpha=ctx.getImageData(Math.round(moon.x*width)-12,Math.round(moon.y*height)-12,24,24).data;
     const daylight=moon.visible&&s.conditions().calendar.light===1&&alpha.some((v,i)=>i%4===3&&v>15);
-    s.fixture('Clear night');s.state.fixed=false;s.render();const star=p.celestialState.stars.find(x=>x.visible&&x.opacity>.2);
-    s.state.fixed=true;s.state.moonX=star.x;s.state.moonY=star.y;s.render();
-    // A nonluminous fixture still covers the star with its dark disk.
-    p.renderer.updateCelestial(s.conditions().calendar,{x:star.x,y:star.y,phase:0,visible:true,opacity:0});
-    const shadow=p.renderer.celestialContext.getImageData(Math.round(star.x*width),Math.round(star.y*height),1,1).data[3];
-    return {daylight,shadow};
+    s.fixture('Clear night');s.state.fixed=false;s.render();
+    const calendar=s.conditions().calendar,r=p.renderer;
+    r.updateCelestial(calendar,{visible:false});
+    const star=p.celestialState.stars.find(x=>x.visible&&x.opacity>.2&&
+      ctx.getImageData(Math.round(x.x*width),Math.round(x.y*height),1,1).data[3]>0);
+    const starAlpha=()=>ctx.getImageData(Math.round(star.x*width),Math.round(star.y*height),1,1).data[3];
+    const baseline=starAlpha(),fixture={x:star.x,y:star.y,phase:.5,visible:true};
+    r.updateCelestial(calendar,{...fixture,opacity:0});const hidden=starAlpha();
+    r.updateCelestial(calendar,{...fixture,opacity:.001});const subByte=starAlpha();
+    // A new moon is unlit, but its nonzero opacity still covers the star.
+    r.updateCelestial(calendar,{...fixture,phase:0,opacity:.75});const shadow=starAlpha();
+    return {daylight,baseline,hidden,subByte,shadow};
   });check('Quarter moon remains visible in full daylight',pixels.daylight);
+  check('Zero-opacity moon leaves underlying stars intact',pixels.baseline>0&&pixels.hidden===pixels.baseline,pixels);
+  check('Moon opacity rounded to zero leaves underlying stars intact',pixels.subByte===pixels.baseline,pixels);
   check('Unlit lunar disk conceals underlying stars',pixels.shadow===0,pixels.shadow);
   const haze=await page.evaluate(()=>{
     const s=skyStudy;s.fixture('Winter sunrise');s.state.cover=0;s.render();const r=s.painter.renderer,b=s.painter.celestialState.moon;
@@ -68,6 +76,23 @@ try{
     r.updateCelestial(s.conditions().calendar,{visible:false});
     return {withMoon,withoutMoon:r.celestialContext.getImageData(x,y,1,1).data[3]};
   });check('Dark moon does not cut a hole in atmospheric sunlight',haze.withMoon>=haze.withoutMoon-1,haze);
+
+  const heldSun=await page.evaluate(async()=>{
+    const {Painting}=await import('/painting.js'),{realTime,SCENES}=await import('/shared/world.js');
+    // This deterministic catalog places star 175 within the morning sun's disk.
+    const scene={...SCENES[0],sky:{...SCENES[0].sky,seed:566000}};
+    const p=new Painting(document.createElement('canvas'),document.createElement('canvas'),{scene,fallback:document.createElement('img')});
+    try{
+      await p.init();const snap={world:{epoch:0,nest:{materials:0},action:null}};
+      p.render(snap,realTime(0,80.3*86400000));const day=p.celestialState.sun;
+      p.motionChanged({matches:true});p.render(snap,realTime(0,81*86400000));
+      const {sun,stars}=p.celestialState,star=stars.find(s=>s.id===175),[a,b,c,d]=sun.matrix;
+      const x=(star.x-sun.x)*scene.width,y=(star.y-sun.y)*scene.height,det=a*d-b*c;
+      const starInside=((d*x-c*y)/det)**2+((-b*x+a*y)/det)**2<.25;
+      const alpha=p.renderer.celestialContext.getImageData(Math.round(star.x*scene.width),Math.round(star.y*scene.height),1,1).data[3];
+      return {dayOpacity:day.opacity,nightOpacity:sun.opacity,held:day.x===sun.x&&day.y===sun.y,starInside,alpha};
+    }finally{p.dispose();}
+  });check('Reduced-motion sun fades at night without erasing a star',heldSun.dayOpacity>0&&heldSun.nightOpacity===0&&heldSun.held&&heldSun.starInside&&heldSun.alpha>0,heldSun);
 
   const controls=await page.evaluate(async()=>{
     const {Painting}=await import('/painting.js'),{realTime}=await import('/shared/world.js');
@@ -133,6 +158,6 @@ try{
     execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y','-i',videoPath,'-ss','1','-c:v','libx264','-crf','22','-pix_fmt','yuv420p',
       '-movflags','+faststart',`${directory}/moon-real-speed.mp4`]);
   }
-  await writeFile(`${directory}/browser-results.json`,JSON.stringify({results,errors,shots,performance:performanceResult},null,2)+'\n');
+  await writeFile(`${directory}/celestial-browser-results.json`,JSON.stringify({results,errors,shots,performance:performanceResult},null,2)+'\n');
   if(results.some(r=>!r.pass)||errors.length)process.exitCode=1;
 }finally{await browser.close();}
