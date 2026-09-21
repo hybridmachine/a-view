@@ -5,7 +5,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 const { chromium }=createRequire(import.meta.url)('playwright');
 const browser=await chromium.launch({headless:true,...(process.env.SKY_GPU==='metal'?{args:['--enable-gpu','--use-gl=angle','--use-angle=metal']}:{}),...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{})});
 const base=process.env.SKY_PREVIEW_URL||'http://127.0.0.1:4174';
-const directory='docs/sky-validation';await mkdir(directory,{recursive:true});
+const directory=process.env.SKY_VALIDATION_DIR||'docs/sky-validation';await mkdir(directory,{recursive:true});
 const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
 const errors=[];page.on('pageerror',error=>errors.push(error.message));
 await page.addInitScript(()=>{

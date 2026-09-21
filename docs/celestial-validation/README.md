@@ -1,0 +1,26 @@
+The sun and moon now move continuously through a projected sky, emerging from behind the painted ridge and passing behind clouds and foliage. The camera faces east at 49° north with a 100° horizontal field of view. The astronomical horizon is at 43% of the artwork height with zero camera pitch; the hills occlude it. Summer rises can be obscured by the oak, while winter rises appear farther to the right. Bodies can leave the top or sides of this fixed view.
+
+Validation ran locally on an Apple M1 using Chromium 140 with the ANGLE Metal renderer and a temporary world database.
+
+| Check | Result |
+| --- | --- |
+| `npm run check` | All syntax checks passed |
+| `npm test` | 86/86 tests passed, including server integration and persisted world behavior |
+| Celestial browser checks | 35/35 passed, including the 17 production shader pixel checks and real-speed playback |
+| Existing sky lifecycle checks | 26/26 passed; shader pixel checks also passed 17/17 |
+| Visitor display checks | 12/12 passed |
+| Shared validation output directory | All three reports retained their contents after subsequent suites ran |
+
+The numerical suite covers seasonal solar height and direction, lunar phase/position relationships, shared sampling without frame history, rotating star geometry, midnight/year/phase boundaries, negative and century-scale time jumps, perspective clipping, finite projection at the camera plane, refraction continuity, and preservation of the exact legacy calendar lighting and sunrise/sunset rules.
+
+The browser checks sample disk coverage against the actual foreground alpha throughout sunrise, moonrise, and moonset. Each sequence includes fully hidden, partially revealed, and fully clear disks, with several intermediate steps. Production shader checks verify cloud transmission, opaque/partial landscape occlusion, and crop/pan mapping. Additional checks cover a daylight quarter moon, star concealment by the unlit lunar hemisphere, and preservation of atmospheric haze around a near-new moon. Zero-opacity bodies (including opacity rounded to zero) leave stars intact; a reduced-motion fixture verifies that a held sun fading at night cannot erase a star inside its disk. Pause, reduced motion, changing light studies, calendar playback, mobile panning, context restoration, and fallback are exercised as well.
+
+The [10-second time-lapse](rises-timelapse.mp4) joins an equinox sunrise sequence and a near-full moonrise sequence. Each half compresses several world hours; the transition between halves is intentional. The [real-speed moon recording](moon-real-speed.mp4) uses the normal 365/30 world-clock rate. Motion is slow at that rate: one full world day lasts about 118 minutes.
+
+Selected frames: [sunrise](sun-rise.png), [sun climbing](sun-climbing.png), [moonrise](moon-rise.png), [moon climbing](moon-climbing.png), [daytime quarter moon](daytime-moon.png), [winter rise](winter.png), and [moonset through a southwest-facing study camera](moonset.png). [Portrait left](portrait-pan-0.png) and [portrait right](portrait-pan-1.png) show different crops of the same celestial geometry. Full sequences and check details are in [browser results](celestial-browser-results.json), [ridge coverage samples](ridge-crossings.json), [sky regression results](browser-results.json), and [display results](display-results.json).
+
+In the moving-sky benchmark, 300 frames sample ten real seconds of world progression at a 1440 × 900 viewport. Median draw time was 0.20 ms and p95 was 2.50 ms, including `gl.finish()` in this diagnostic run. The celestial texture updated 80 times across those 300 frames; cumulative canvas draw/upload submission time was about 162 ms. This is a local renderer measurement, not a texture-bandwidth measurement or a guarantee for every device. The separate real-speed recording checks at least 25 rendered frames per second against the preview's 30 fps cap; its exact count and elapsed time are saved in the browser results.
+
+The orbital approximation belongs to the fictional 365-day world. It includes lunar inclination and nodal motion, uses a 29.53059-day phase cycle, and derives phase shading from the shared sun/moon geometry. It is not an Earth-date ephemeris. Angular disk sizes use a constant 1.5× artistic multiplier for readability. Precise eclipses, directional water reflections, and moving terrain shadows are not modeled. The painted day/night landscape and the durable simulation's existing daylight rules remain the lighting baseline.
+
+To reproduce, start the server with a temporary `A_VIEW_DB`, provide the same optional Playwright dependency used by the other browser checks, and set `SKY_PREVIEW_URL` to that server. Run `scripts/check-celestial-browser.mjs`, `scripts/check-sky-browser.mjs`, and `scripts/check-sky-display.mjs`. `BROWSER_EXECUTABLE` selects an installed Chromium; `SKY_GPU=metal` selects the Metal backend. Use `CELESTIAL_RECORD=1` and an installed FFmpeg to regenerate the recordings, with `CELESTIAL_FRAME_DIR` pointing to a temporary directory. Set `SKY_VALIDATION_DIR=docs/celestial-validation` for all three suites to regenerate this evidence together: they write `celestial-browser-results.json`, `browser-results.json`, and `display-results.json`, respectively, without overwriting one another's reports.

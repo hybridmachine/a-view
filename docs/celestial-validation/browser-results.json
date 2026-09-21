@@ -1,0 +1,516 @@
+{
+  "state": {
+    "ready": true,
+    "failure": null
+  },
+  "results": [
+    {
+      "name": "Clear moon visible",
+      "pass": true,
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Clear star visible",
+      "pass": true,
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Opaque cloud hides moon and glow",
+      "pass": true,
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Opaque cloud hides star",
+      "pass": true,
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Half cloud uses premultiplied over once",
+      "pass": true,
+      "actual": [
+        116,
+        82,
+        73
+      ],
+      "expected": [
+        116,
+        82,
+        73
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Two layers multiply transmission",
+      "pass": true,
+      "actual": [
+        63,
+        63,
+        63
+      ],
+      "expected": [
+        64,
+        64,
+        64
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Opaque foreground conceals sky",
+      "pass": true,
+      "actual": [
+        18,
+        90,
+        40
+      ],
+      "expected": [
+        18,
+        90,
+        40
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Leaf hole reveals sky",
+      "pass": true,
+      "actual": [
+        32,
+        64,
+        96
+      ],
+      "expected": [
+        32,
+        64,
+        96
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Partial foreground is not premultiplied twice",
+      "pass": true,
+      "actual": [
+        116,
+        82,
+        73
+      ],
+      "expected": [
+        116,
+        82,
+        73
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Top-left upload orientation",
+      "pass": true,
+      "actual": [
+        255,
+        0,
+        0
+      ],
+      "expected": [
+        255,
+        0,
+        0
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Top-right upload orientation",
+      "pass": true,
+      "actual": [
+        0,
+        255,
+        0
+      ],
+      "expected": [
+        0,
+        255,
+        0
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Bottom-left upload orientation",
+      "pass": true,
+      "actual": [
+        0,
+        0,
+        255
+      ],
+      "expected": [
+        0,
+        0,
+        255
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Bottom-right upload orientation",
+      "pass": true,
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Scene crop and pan share coordinates",
+      "pass": true,
+      "actual": [
+        0,
+        255,
+        0
+      ],
+      "expected": [
+        0,
+        255,
+        0
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Changed pixel ratio preserves mapping",
+      "pass": true,
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "Atlas wrap boundary is continuous",
+      "pass": true,
+      "actual": [
+        32,
+        64,
+        96
+      ],
+      "expected": [
+        32,
+        64,
+        96
+      ],
+      "tolerance": 3
+    },
+    {
+      "name": "No WebGL error",
+      "pass": true,
+      "actual": [
+        0
+      ],
+      "expected": [
+        0
+      ],
+      "tolerance": 0
+    }
+  ],
+  "contracts": [
+    {
+      "name": "Context loss 1 immediately hides GPU",
+      "pass": true
+    },
+    {
+      "name": "Lost-context fallback follows night conditions",
+      "pass": true
+    },
+    {
+      "name": "Restoration 1 releases old resources",
+      "pass": true,
+      "detail": {
+        "texture": 13,
+        "shader": 8,
+        "buffer": 4,
+        "program": 4
+      }
+    },
+    {
+      "name": "Context loss 2 immediately hides GPU",
+      "pass": true
+    },
+    {
+      "name": "Lost-context fallback follows night conditions",
+      "pass": true
+    },
+    {
+      "name": "Restoration 2 releases old resources",
+      "pass": true,
+      "detail": {
+        "texture": 13,
+        "shader": 8,
+        "buffer": 4,
+        "program": 4
+      }
+    },
+    {
+      "name": "Context loss 3 immediately hides GPU",
+      "pass": true
+    },
+    {
+      "name": "Lost-context fallback follows night conditions",
+      "pass": true
+    },
+    {
+      "name": "Restoration 3 releases old resources",
+      "pass": true,
+      "detail": {
+        "texture": 13,
+        "shader": 8,
+        "buffer": 4,
+        "program": 4
+      }
+    },
+    {
+      "name": "paused",
+      "pass": true
+    },
+    {
+      "name": "held",
+      "pass": true
+    },
+    {
+      "name": "resumed",
+      "pass": true
+    },
+    {
+      "name": "directJump",
+      "pass": true
+    },
+    {
+      "name": "Media-query changes freeze the current motion sample",
+      "pass": true
+    },
+    {
+      "name": "Media-query changes rejoin shared time",
+      "pass": true
+    },
+    {
+      "name": "Initial reduced motion freezes current time",
+      "pass": true
+    },
+    {
+      "name": "No WebGL keeps coherent original painting",
+      "pass": true
+    },
+    {
+      "name": "Missing bundle keeps coherent fallback",
+      "pass": true
+    },
+    {
+      "name": "Insufficient sampler budget uses fallback",
+      "pass": true
+    },
+    {
+      "name": "Insufficient maximum texture size uses fallback",
+      "pass": true
+    },
+    {
+      "name": "Shader compilation failure uses fallback",
+      "pass": true
+    },
+    {
+      "name": "Different foreground alpha rejects entire bundle",
+      "pass": true
+    },
+    {
+      "name": "Concurrent initialization and disposal retire old generations",
+      "pass": true
+    },
+    {
+      "name": "Two sessions share fixed cloud state",
+      "pass": true
+    },
+    {
+      "name": "Reload samples the same arrangement",
+      "pass": true
+    },
+    {
+      "name": "Retina viewport respects 1.6 render cap",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "matrix": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "pan": 0,
+      "fixture": "Oak and horizon",
+      "file": "view-1920x1080-pan0.png"
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "dpr": 1,
+      "pan": 1,
+      "fixture": "Oak and horizon",
+      "file": "view-1920x1080-pan1.png"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "pan": 0,
+      "fixture": "Oak and horizon",
+      "file": "view-1440x900-pan0.png"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "pan": 1,
+      "fixture": "Oak and horizon",
+      "file": "view-1440x900-pan1.png"
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dpr": 1,
+      "pan": 0,
+      "fixture": "Oak and horizon",
+      "file": "view-390x844-pan0.png"
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dpr": 1,
+      "pan": 1,
+      "fixture": "Oak and horizon",
+      "file": "view-390x844-pan1.png"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "fixture": "Clear night",
+      "file": "fixture-clear-night.png"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "fixture": "Dense cloud over moon",
+      "file": "fixture-dense-cloud-over-moon.png"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "fixture": "Dawn",
+      "file": "fixture-dawn.png"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "fixture": "Dusk",
+      "file": "fixture-dusk.png"
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "fixture": "Daytime overcast",
+      "file": "fixture-daytime-overcast.png"
+    }
+  ],
+  "performance": {
+    "viewport": [
+      1440,
+      900
+    ],
+    "dpr": 1,
+    "frames": 180,
+    "median": 0.10000002384185791,
+    "p95": 0.30000001192092896,
+    "max": 0.5,
+    "stats": {
+      "celestialUploads": 7,
+      "uploadMs": 5.900000035762787,
+      "staticUploads": 7
+    },
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+    "resources": {
+      "texture": 13,
+      "shader": 8,
+      "buffer": 4,
+      "program": 4
+    }
+  },
+  "crossing": null
+}

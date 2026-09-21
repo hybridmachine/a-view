@@ -16,9 +16,11 @@ export class Painting {
     this.birdRenderer=new BirdRenderer(scene.birdLife??null);this.birdActive=false;
     this.media=matchMedia('(prefers-reduced-motion: reduce)');this.motion=!this.media.matches;
     this.frozenMotion=null;this.lastMotion=null;
+    this.frozenCelestial=null;this.lastCelestial=null;this.celestialStudy=null;
     this.motionChanged=event=>{
       this.motion=!event.matches;
       this.frozenMotion=this.motion?null:this.lastMotion;
+      this.frozenCelestial=this.motion?null:this.lastCelestial;
     };
     this.media.addEventListener('change',this.motionChanged);
     this.resize=()=>{
@@ -99,6 +101,11 @@ export class Painting {
     if(this.disposed||!snapshot)return;
     const epoch=snapshot.world.epoch;
     const {calendar:c,weather:w}=preview?.conditions??viewConditions(epoch,now,study);
+    // A deliberate study selection may choose a new still sky in reduced motion.
+    if(study!==this.celestialStudy){this.frozenCelestial=null;this.celestialStudy=study;}
+    if(!this.motion&&this.frozenCelestial===null)this.frozenCelestial=c.total;
+    const celestialTime=preview?.celestialTime??(this.motion?c.total:this.frozenCelestial);
+    this.lastCelestial=celestialTime;
     const realSeconds=preview?.realSeconds??(now-epoch)/1000;
     if(!this.motion&&this.frozenMotion===null)this.frozenMotion=realSeconds;
     const motionSeconds=preview?.motionSeconds??(this.motion?realSeconds:this.frozenMotion);
@@ -120,8 +127,9 @@ export class Painting {
         }catch(error){this.restoreIntactForeground(error);}
       }
       const skyOptions={calendar:c,weather:w,realSeconds,motionSeconds,crop:this.crop,offset:this.offset,
-        moon:preview?.moon,debug:preview?.debug,visibleLayers:preview?.visibleLayers};
+        celestialTime,camera:preview?.camera,moon:preview?.moon,debug:preview?.debug,visibleLayers:preview?.visibleLayers};
       this.cloudState=this.renderer.draw(skyOptions);
+      this.celestialState=this.renderer.celestialPose;
       if(this.pendingWeather&&!preview?.debug){
         const images=this.pendingWeather;this.pendingWeather=null;
         try{this.weatherRenderer=new WeatherRenderer(this.gl,this.scene,images);}

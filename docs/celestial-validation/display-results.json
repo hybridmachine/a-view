@@ -1,0 +1,53 @@
+{
+  "results": [
+    {
+      "name": "Visitor pause freezes painting pixels",
+      "pass": true
+    },
+    {
+      "name": "Visitor resume samples moving present",
+      "pass": true
+    },
+    {
+      "name": "Visitor dawn study renders",
+      "pass": true
+    },
+    {
+      "name": "Visitor day study renders",
+      "pass": true
+    },
+    {
+      "name": "Visitor dusk study renders",
+      "pass": true
+    },
+    {
+      "name": "Visitor night study renders",
+      "pass": true
+    },
+    {
+      "name": "Visitor rain study renders",
+      "pass": true
+    },
+    {
+      "name": "Return to live clears study",
+      "pass": true
+    },
+    {
+      "name": "heldAction",
+      "pass": true
+    },
+    {
+      "name": "heldExpired",
+      "pass": true
+    },
+    {
+      "name": "restored",
+      "pass": true
+    },
+    {
+      "name": "Tab suspension returns to a complete frame",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

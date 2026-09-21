@@ -63,15 +63,15 @@ test('celestial pose stays finite across calendar boundaries; fixtures are injec
     const pose=celestialPose(calendar(0,t));
     for(const key of ['x','y','phase','radius'])assert.ok(Number.isFinite(pose.moon[key]));
     assert.ok(pose.moon.phase>=0&&pose.moon.phase<1);
-    assert.equal(pose.stars.length,48);
+    assert.equal(pose.stars.length,config.celestial.starCount);
   }
   const moon={x:.7,y:.2,phase:.5,visible:true};
-  assert.deepEqual({...celestialPose(calendar(0,0),moon).moon,radius:undefined},{...moon,radius:undefined});
+  for(const [key,value]of Object.entries(moon))assert.equal(celestialPose(calendar(0,0),moon).moon[key],value);
 });
-test('known full-moon fixture preserves the original approximate lunar path',()=>{
-  const {moon}=celestialPose({total:14.765*86400000,hour:0,light:0});
-  assert.ok(Math.abs(moon.phase-.5)<1e-12);
-  assert.ok(Math.abs(moon.x-.78)<1e-12);
-  assert.ok(Math.abs(moon.y-.11)<1e-12);
-  assert.equal(moon.visible,true);
+test('moon contrast survives daylight and fixture phase shading follows illumination',()=>{
+  const fixture={x:.7,y:.2,phase:.25,visible:true};
+  const {moon}=celestialPose({total:0,hour:12,light:1,elevation:1},fixture);
+  assert.ok(moon.opacity>0);
+  assert.ok(Math.abs(moon.illumination-.5)<1e-12);
+  assert.ok(moon.light[0]>.99);
 });

@@ -3,6 +3,9 @@ import { LAKESIDE_FOLIAGE } from './lakeside-foliage.js';
 import { LAKESIDE_WEATHER } from './lakeside-weather.js';
 import { LAKESIDE_COTTAGE } from './lakeside-cottage.js';
 import { LAKESIDE_BIRD } from './lakeside-bird.js';
+import { solarDeclination } from './solar.js';
+import { CELESTIAL_MODEL } from './celestial.js';
+import { SKY_CAMERA } from './celestial-projection.js';
 // All durable actions use server milliseconds. Calendar progress is a separate domain.
 export const RATE = 365 / 30;
 export const WORLD_DAY = 86_400_000;
@@ -26,6 +29,7 @@ export const SCENES = [{
   birdLife: LAKESIDE_BIRD,
   sky: {
     version: 1, seed: 617, atlasSize: [2048, 1024],
+    celestial: CELESTIAL_MODEL, camera: SKY_CAMERA,
     assets: {
       day: '/assets/lakeside-sky-v1/sky-day.png', night: '/assets/lakeside-sky-v1/sky-night.png',
       foregroundDay: '/assets/lakeside-sky-v1/foreground-day.png', foregroundNight: '/assets/lakeside-sky-v1/foreground-night.png',
@@ -59,7 +63,7 @@ export function calendar(epoch, now) {
   const hour = mod(total / 3_600_000, 24);
   const season = dayOfYear < 79 || dayOfYear >= 355 ? 'Winter' : dayOfYear < 172 ? 'Spring' : dayOfYear < 265 ? 'Summer' : 'Autumn';
   // Low-cost solar model for a fictional location at 49 degrees north.
-  const declination = .4091 * Math.sin(2 * Math.PI * (dayOfYear - 80) / 365);
+  const declination = solarDeclination(dayOfYear);
   const latitude = 49 * Math.PI / 180;
   const hourAngle = (hour - 12) * Math.PI / 12;
   const elevation = Math.asin(Math.sin(latitude) * Math.sin(declination) + Math.cos(latitude) * Math.cos(declination) * Math.cos(hourAngle));

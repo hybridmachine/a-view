@@ -11,6 +11,9 @@ uniform sampler2D dayImage, nightImage, skyDay, skyNight, cloudAtlas, celestial,
 uniform vec2 crop, offset, texel;
 uniform float seconds, light, cloud, rain, wind, dusk, effects, debugMode;
 uniform vec3 waterTint;
+uniform vec3 sunDirection, cameraForward, cameraRight, cameraUp;
+uniform vec3 cameraProjection;
+uniform float sunWarmth;
 uniform vec4 layer0, layer1, rect0, rect1, density0, density1;
 uniform vec2 deform0, deform1;
 uniform vec3 tint0, tint1;
@@ -40,6 +43,9 @@ void main(){
   vec2 uv=vec2(vUv.x,1.-vUv.y)*crop+offset;
   vec3 sky=mix(texture2D(skyNight,uv).rgb,texture2D(skyDay,uv).rgb,light);
   sky*=vec3(1.+dusk*.08,1.-dusk*.025,1.-dusk*.11);
+  vec3 ray=normalize(cameraForward+cameraRight*(uv.x-.5)*cameraProjection.x+cameraUp*(cameraProjection.z-uv.y)*cameraProjection.y);
+  float warmth=exp((dot(ray,sunDirection)-1.)*9.)*sunWarmth;
+  sky+=vec3(.08,.032,.006)*warmth;
   sky=over(texture2D(celestial,uv),sky);
   vec4 farCloud=cloudLayer(uv,layer0,rect0,density0,deform0,tint0)*visibleLayers.x;
   vec4 nearCloud=cloudLayer(uv,layer1,rect1,density1,deform1,tint1)*visibleLayers.y;
@@ -168,38 +174,64 @@ export class SkyRenderer {
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
     gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL,gl.BROWSER_DEFAULT_WEBGL);
   }
-  updateCelestial(calendar, override) {
-    const pose=celestialPose(calendar,override,this.scene.sky.seed);
+  updateCelestial(calendar, override, worldMs=calendar.total, camera=this.scene.sky.camera) {
+    const {width,height}=this.scene;
+    const pose=celestialPose(calendar,override,this.scene.sky.seed,{model:this.scene.sky.celestial,camera,width,height,worldMs});
+    this.celestialPose=pose;
     // Cache the actual raster inputs at subpixel / sub-byte precision. This avoids
     // full canvas uploads for calendar changes too small to alter visible detail.
     const quantize=(x,step)=>Math.round(x/step)*step;
-    pose.night=quantize(pose.night,1/255);
-    pose.moon.x=quantize(pose.moon.x,1/(this.scene.width*4));pose.moon.y=quantize(pose.moon.y,1/(this.scene.height*4));
-    pose.moon.phase=quantize(pose.moon.phase,.0002);
-    for(const star of pose.stars)star.x=quantize(star.x,1/(this.scene.width*4));
-    const key=JSON.stringify(pose);
+    const rasterBody=body=>{
+      const opacity=quantize(body.opacity,1/255);
+      // Invisible disks must not erase stars. Phase illumination is separate:
+      // a visible new moon still conceals stars with its unlit hemisphere.
+      return body.visible&&opacity>0?{
+        x:quantize(body.x*width,.125),y:quantize(body.y*height,.125),
+        matrix:body.matrix.map(x=>quantize(x,.03125)),opacity,
+        warmth:quantize(body.warmth??0,1/255),light:body.light?.map(x=>quantize(x,.001)),
+        illumination:quantize(body.illumination??1,1/255),
+      }:null;
+    };
+    const raster={sun:rasterBody(pose.sun),moon:rasterBody(pose.moon),
+      stars:pose.stars.filter(star=>star.visible&&star.opacity>1/510).map(star=>({
+        x:quantize(star.x*width,.125),y:quantize(star.y*height,.125),radius:star.radius,opacity:quantize(star.opacity,1/255)}))};
+    const key=JSON.stringify(raster);
     if(key===this.celestialKey)return;
     this.celestialKey=key;
-    const start=performance.now(),ctx=this.celestialContext,{width,height}=this.scene;
+    const start=performance.now(),ctx=this.celestialContext;
     ctx.clearRect(0,0,width,height);
-    if(pose.night>=.05){
-      for(const star of pose.stars){ctx.fillStyle=`rgba(231,236,218,${pose.night*star.opacity})`;ctx.beginPath();ctx.arc(star.x*width,star.y*height,star.radius,0,Math.PI*2);ctx.fill();}
-      if(pose.moon.visible){
-        const {x:ux,y:uy,radius:r,phase}=pose.moon,x=ux*width,y=uy*height;
-        const glow=ctx.createRadialGradient(x,y,r*.5,x,y,r*5);glow.addColorStop(0,`rgba(235,232,199,${pose.night*.12})`);glow.addColorStop(1,'rgba(235,232,199,0)');ctx.fillStyle=glow;ctx.fillRect(x-r*5,y-r*5,r*10,r*10);
-        ctx.fillStyle=`rgba(230,232,207,${pose.night*.68})`;
-        const sunX=Math.sin(phase*Math.PI*2),sunZ=-Math.cos(phase*Math.PI*2);
-        for(let yy=-r;yy<=r;yy++)for(let xx=-r;xx<=r;xx++){
-          const nx=xx/r,ny=yy/r,nz=Math.sqrt(Math.max(0,1-nx*nx-ny*ny));
-          if(nx*nx+ny*ny<=1&&nx*sunX+nz*sunZ>0)ctx.fillRect(x+xx,y+yy,1.2,1.2);
-        }
+    for(const star of raster.stars){ctx.fillStyle=`rgba(231,236,218,${star.opacity})`;ctx.beginPath();ctx.arc(star.x,star.y,star.radius,0,Math.PI*2);ctx.fill();}
+    // Cover stars before atmospheric halos are drawn. The dark lunar hemisphere
+    // must not punch a blue hole in the sun's foreground haze near new moon.
+    for(const body of [raster.sun,raster.moon]){
+      if(!body)continue;
+      ctx.save();ctx.setTransform(...body.matrix,body.x,body.y);ctx.globalCompositeOperation='destination-out';
+      ctx.fillStyle='#000';ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+    for(const [name,body]of [['sun',raster.sun],['moon',raster.moon]]){
+      if(!body)continue;
+      ctx.save();ctx.setTransform(...body.matrix,body.x,body.y);
+      const solar=name==='sun',warm=body.warmth;
+      const color=solar?`255,${Math.round(248-65*warm)},${Math.round(217-89*warm)}`:'230,233,215';
+      const glow=ctx.createRadialGradient(0,0,.6,0,0,6);
+      glow.addColorStop(0,`rgba(${color},${body.opacity*(solar?.20:.10*body.illumination)})`);glow.addColorStop(1,`rgba(${color},0)`);
+      ctx.fillStyle=glow;ctx.fillRect(-6,-6,12,12);
+      ctx.fillStyle=`rgba(${color},${body.opacity})`;ctx.beginPath();
+      if(solar){ctx.arc(0,0,1,0,Math.PI*2);}
+      else{
+        const [lx,ly,lz]=body.light;
+        ctx.rotate(Math.atan2(ly,lx));
+        ctx.arc(0,0,1,-Math.PI/2,Math.PI/2);
+        for(let i=0;i<=48;i++){const y=1-i/24;ctx.lineTo(-Math.max(-1,Math.min(1,lz))*Math.sqrt(Math.max(0,1-y*y)),y);}
+        ctx.closePath();
       }
+      ctx.fill();ctx.restore();
     }
     this.gl.activeTexture(this.gl.TEXTURE0+5);this.gl.bindTexture(this.gl.TEXTURE_2D,this.textures[5]);this.upload(this.celestialCanvas);
     this.stats.celestialUploads++;this.stats.uploadMs+=performance.now()-start;
   }
-  draw({calendar,weather,realSeconds,motionSeconds=realSeconds,crop=[1,1],offset=[0,0],moon,debug=0,visibleLayers=[1,1],effects=1,synthetic=false,uniforms={}}) {
-    if(!synthetic)this.updateCelestial(calendar,moon);
+  draw({calendar,weather,realSeconds,motionSeconds=realSeconds,celestialTime=calendar.total,camera=this.scene.sky.camera,crop=[1,1],offset=[0,0],moon,debug=0,visibleLayers=[1,1],effects=1,synthetic=false,uniforms={}}) {
+    if(!synthetic)this.updateCelestial(calendar,moon,celestialTime,camera);
     const gl=this.gl;gl.useProgram(this.program);gl.disable(gl.BLEND);
     gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);const position=gl.getAttribLocation(this.program,'position');gl.enableVertexAttribArray(position);gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
     ['dayImage','nightImage','skyDay','skyNight','cloudAtlas','celestial','waterMask'].forEach((name,index)=>{
@@ -208,6 +240,11 @@ export class SkyRenderer {
     const lighting=skyLighting(calendar,weather),states=sampleCloudLayers({realSeconds,motionSeconds,weather,config:this.scene.sky});
     const values={crop,offset,texel:[1/this.scene.width,1/this.scene.height],seconds:motionSeconds,light:calendar.light,
       cloud:weather.cloud,rain:weather.rain,wind:weather.wind,...lighting,effects,debugMode:debug,visibleLayers};
+    const pose=synthetic?null:this.celestialPose,frame=pose?.frame;
+    Object.assign(values,{sunDirection:pose?.sun.direction??[0,0,1],cameraForward:frame?.forward??[0,1,0],
+      cameraRight:frame?.right??[1,0,0],cameraUp:frame?.up??[0,0,1],
+      cameraProjection:frame?[frame.width/frame.focal,frame.height/frame.focal,frame.centerY]:[1,1,.5],
+      sunWarmth:pose?(1-weather.cloud*.85)*Math.max(0,1-Math.abs(pose.sun.altitude-.05)/.22)*effects:0});
     states.forEach((state,index)=>{
       const config=this.scene.sky.layers[index],density=state.density,[aw,ah]=this.scene.sky.atlasSize,[x,y,w,h]=config.rect;
       values[`layer${index}`]=[state.phase,config.period,config.top,config.height];
