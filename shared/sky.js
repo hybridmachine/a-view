@@ -1,4 +1,6 @@
 import { integratedWind } from './wind.js';
+import { CELESTIAL_MODEL, DEG, sampleCelestial } from './celestial.js';
+import { SKY_CAMERA, cameraFrame, projectBody, projectDirection } from './celestial-projection.js';
 
 const clamp = x => Math.max(0, Math.min(1, x));
 const mod = (x, n) => ((x % n) + n) % n;
@@ -28,18 +30,31 @@ export function sampleCloudLayers({ realSeconds, motionSeconds = realSeconds, we
     rain: clamp(weather.rain),
   }));
 }
-export function celestialPose(calendar, override = null, seed = 617) {
-  const phase = mod(calendar.total / 86400000, 29.53) / 29.53;
-  const angle = (calendar.hour - 12) / 24 * Math.PI * 2 - phase * Math.PI * 2;
-  const elevation = Math.cos(angle);
-  const moon = { x: .78 + Math.sin(angle) * .12, y: .30 - elevation * .19, radius: 9, phase, visible: elevation >= .15, ...override };
-  return {
-    night: 1 - clamp(calendar.light), moon,
-    stars: Array.from({ length: 48 }, (_, i) => ({
-      x: .58 + mod(hash(i + seed) * .53 + calendar.hour * .003, .45),
-      y: .025 + hash(i + 941) * .24, radius: .35 + hash(i) * .6, opacity: .2 + hash(i + 7) * .45,
-    })),
-  };
+export function celestialPose(calendar, override = null, seed = 617,
+  {model=CELESTIAL_MODEL,camera=SKY_CAMERA,width=1672,height=941,worldMs=calendar.total}={}) {
+  const sky=sampleCelestial(worldMs,model,seed),frame=cameraFrame(camera,width,height);
+  const night=1-clamp(calendar.light);
+  const sun=projectBody(sky.sun,frame,model.sizeScale);
+  const moon=projectBody(sky.moon,frame,model.sizeScale,sky.sun.direction);
+  const extinction=body=>smooth(-1*DEG,6*DEG,body.apparentAltitude);
+  // Also follows the live illumination when reduced motion holds a daytime pose.
+  sun.opacity=extinction(sun)*smooth(-.12,.03,calendar.elevation??sky.sun.altitude);
+  sun.warmth=1-smooth(3*DEG,25*DEG,sun.apparentAltitude);
+  moon.opacity=extinction(moon)*(.22+night*.53);
+  if(override){
+    // Explicit screen-space fixtures remain available for cloud/occlusion tests.
+    const phase=override.phase??moon.phase,radius=override.radius??9;
+    Object.assign(moon,override,{matrix:[radius,0,0,radius],radius,extentX:radius/width,extentY:radius/height,
+      inFront:true,light:[Math.sin(phase*Math.PI*2),0,-Math.cos(phase*Math.PI*2)],
+      opacity:override.opacity??(.22+night*.53),illumination:(1-Math.cos(phase*Math.PI*2))/2});
+  }
+  const starLight=1-smooth(-16*DEG,-4*DEG,calendar.elevation??sky.sun.altitude);
+  const stars=sky.stars.map(star=>{
+    const point=projectDirection(star.direction,frame);
+    return {...point,id:star.id,radius:star.radius,opacity:star.opacity*starLight*smooth(0,8*DEG,star.altitude),
+      visible:point.inFront&&point.x>=-star.radius/width&&point.x<=1+star.radius/width&&point.y>=-star.radius/height&&point.y<=1+star.radius/height};
+  });
+  return {night,sun,moon,stars,frame};
 }
 
 export function skyLighting(calendar, weather) {

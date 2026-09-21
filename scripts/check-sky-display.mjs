@@ -1,9 +1,10 @@
 // Extra visitor-clock and UI contracts. Same optional Playwright setup as check-sky-browser.
 import {createRequire} from 'node:module';
-import {writeFile} from 'node:fs/promises';
+import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const browser=await chromium.launch({headless:true,...(process.env.SKY_GPU==='metal'?{args:['--enable-gpu','--use-gl=angle','--use-angle=metal']}:{}),...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{})});
 const base=process.env.SKY_PREVIEW_URL||'http://127.0.0.1:4174',results=[],errors=[];
+const directory=process.env.SKY_VALIDATION_DIR||'docs/sky-validation';await mkdir(directory,{recursive:true});
 const check=(name,pass,detail)=>{results.push({name,pass,detail});console.log(`${pass?'PASS':'FAIL'} ${name}`);};
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900}});page.on('pageerror',e=>errors.push(e.message));
@@ -51,6 +52,6 @@ try{
   await cdp.send('Page.setWebLifecycleState',{state:'active'});await page.waitForTimeout(500);
   check('Tab suspension returns to a complete frame',await page.locator('#painting').evaluate(c=>c.classList.contains('ready')&&c.style.visibility==='visible'));
   await page.close();
-  await writeFile('docs/sky-validation/display-results.json',JSON.stringify({results,errors},null,2)+'\n');
+  await writeFile(`${directory}/display-results.json`,JSON.stringify({results,errors},null,2)+'\n');
   if(results.some(x=>!x.pass)||errors.length)process.exitCode=1;
 }finally{await browser.close();}

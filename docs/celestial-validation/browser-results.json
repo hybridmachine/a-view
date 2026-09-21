@@ -1,0 +1,226 @@
+{
+  "results": [
+    {
+      "name": "Clear moon visible",
+      "pass": true
+    },
+    {
+      "name": "Clear star visible",
+      "pass": true
+    },
+    {
+      "name": "Opaque cloud hides moon and glow",
+      "pass": true
+    },
+    {
+      "name": "Opaque cloud hides star",
+      "pass": true
+    },
+    {
+      "name": "Half cloud uses premultiplied over once",
+      "pass": true
+    },
+    {
+      "name": "Two layers multiply transmission",
+      "pass": true
+    },
+    {
+      "name": "Opaque foreground conceals sky",
+      "pass": true
+    },
+    {
+      "name": "Leaf hole reveals sky",
+      "pass": true
+    },
+    {
+      "name": "Partial foreground is not premultiplied twice",
+      "pass": true
+    },
+    {
+      "name": "Top-left upload orientation",
+      "pass": true
+    },
+    {
+      "name": "Top-right upload orientation",
+      "pass": true
+    },
+    {
+      "name": "Bottom-left upload orientation",
+      "pass": true
+    },
+    {
+      "name": "Bottom-right upload orientation",
+      "pass": true
+    },
+    {
+      "name": "Scene crop and pan share coordinates",
+      "pass": true
+    },
+    {
+      "name": "Changed pixel ratio preserves mapping",
+      "pass": true
+    },
+    {
+      "name": "Atlas wrap boundary is continuous",
+      "pass": true
+    },
+    {
+      "name": "No WebGL error",
+      "pass": true
+    },
+    {
+      "name": "Sun climbs and moves across the real painting",
+      "pass": true,
+      "detail": {
+        "start": [
+          0.5394731893521068,
+          0.36494904101459635
+        ],
+        "later": [
+          0.5408759629767725,
+          0.36282867857491
+        ],
+        "moving": true
+      }
+    },
+    {
+      "name": "Equinox sunrise crosses the painted ridge progressively",
+      "pass": true,
+      "detail": {
+        "partialFrames": 12,
+        "maxCoverageStep": 0.08573164803111444
+      }
+    },
+    {
+      "name": "Full moon rising crosses the painted ridge progressively",
+      "pass": true,
+      "detail": {
+        "partialFrames": 15,
+        "maxCoverageStep": 0.07984929508993766
+      }
+    },
+    {
+      "name": "Moonset · southwest view crosses the painted ridge progressively",
+      "pass": true,
+      "detail": {
+        "partialFrames": 17,
+        "maxCoverageStep": 0.07817209528439417
+      }
+    },
+    {
+      "name": "Quarter moon remains visible in full daylight",
+      "pass": true
+    },
+    {
+      "name": "Unlit lunar disk conceals underlying stars",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "Dark moon does not cut a hole in atmospheric sunlight",
+      "pass": true,
+      "detail": {
+        "withMoon": 23,
+        "withoutMoon": 23
+      }
+    },
+    {
+      "name": "Celestial controls: paused",
+      "pass": true
+    },
+    {
+      "name": "Celestial controls: held",
+      "pass": true
+    },
+    {
+      "name": "Celestial controls: study",
+      "pass": true
+    },
+    {
+      "name": "Celestial controls: rejoined",
+      "pass": true
+    },
+    {
+      "name": "Sky playback advances calendar time with physical moon enabled",
+      "pass": true
+    },
+    {
+      "name": "Mobile pan changes the crop, not the moon trajectory",
+      "pass": true
+    },
+    {
+      "name": "Moving sky reuses its raster between subpixel changes",
+      "pass": true,
+      "detail": {
+        "frames": 300,
+        "realSeconds": 10,
+        "worldSeconds": 121.66666666666666,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 2.4000000059604645,
+        "celestialUploads": 80,
+        "uploadMs": 155.8000001013279
+      }
+    },
+    {
+      "name": "Real-speed sky sustains at least 25 frames per second",
+      "pass": true,
+      "detail": {
+        "frames": 450,
+        "elapsedMs": 14966,
+        "worldHour": 19.850692416666636
+      }
+    }
+  ],
+  "errors": [],
+  "shots": [
+    {
+      "name": "sun-rise",
+      "fixture": "Equinox sunrise",
+      "hour": 6.48
+    },
+    {
+      "name": "sun-climbing",
+      "fixture": "Equinox sunrise",
+      "hour": 7.35
+    },
+    {
+      "name": "moon-rise",
+      "fixture": "Full moon rising",
+      "hour": 19.52
+    },
+    {
+      "name": "moon-climbing",
+      "fixture": "Full moon rising",
+      "hour": 19.95
+    },
+    {
+      "name": "daytime-moon",
+      "fixture": "Daytime quarter moon",
+      "hour": 14
+    },
+    {
+      "name": "summer",
+      "fixture": "Summer sunrise",
+      "hour": 5.2
+    },
+    {
+      "name": "winter",
+      "fixture": "Winter sunrise",
+      "hour": 8.6
+    },
+    {
+      "name": "moonset",
+      "fixture": "Moonset · southwest view",
+      "hour": 3.8
+    }
+  ],
+  "performance": {
+    "frames": 300,
+    "realSeconds": 10,
+    "worldSeconds": 121.66666666666666,
+    "medianMs": 0.19999998807907104,
+    "p95Ms": 2.4000000059604645,
+    "celestialUploads": 80,
+    "uploadMs": 155.8000001013279
+  }
+}

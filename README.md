@@ -34,7 +34,7 @@ HTTP redirects to HTTPS; Caddy obtains and renews certificates automatically. Se
 
 - Full-viewport daytime and nighttime oil paintings, with subtle GPU water/foliage movement and authored night illumination.
 - Server-authoritative calendar: exactly 365 world days per 30 elapsed real days. Daylight varies seasonally at a fictional latitude of 49° north.
-- Stable shared weather and two moving painted cloud layers. Moonlight and stars pass behind clouds, hills, and oak leaf gaps. Rain, smoke, reeds, and birds use the same displayed real time.
+- Continuous seasonal sun paths, an inclined lunar orbit with daytime phases, and a rotating star field, sampled from shared world time. Celestial disks pass behind clouds, hills, and oak leaf gaps. Rain, smoke, reeds, and birds use displayed real time.
 - Selective wind motion in six painted grass tufts and four oak leaf clusters, with fixed attachments, shared passing gusts, and restrained leaf flutter.
 - Persistent surface moisture: a damp foreground path, a shore stone, a small puddle, and sparse oak drips after rain. These traces dry over elapsed real minutes.
 - A quiet cottage routine: two independent room lights, a casement that opens in fair weather, and smoke from a persisted hearth. A single implied resident completes short interior tasks before each change.
@@ -51,6 +51,8 @@ Controls fade after 12 seconds of inactivity. Move the pointer, tap, or use the 
 
 Cloud positions are derived directly from the shared elapsed time and the analytic integral of the existing wind model. Reloading, resuming, or reconnecting samples the current arrangement without replaying frames. Light studies change the calendar and weather while clouds continue moving. Local pause freezes all displayed inputs. Reduced motion holds the current cloud position while weather and illumination continue to change; turning it off rejoins shared time.
 
+Sun, moon, and stars use a common sky coordinate system at 49° north. The camera faces east with a 100° horizontal field of view; viewport cropping happens after projection. Bodies rise behind the painted ridge and can travel above or outside the frame. The orbital approximation follows the fictional 365-day year and a 29.53059-day lunar phase cycle, including inclination and slow nodal motion. A half-degree disk receives a constant 1.5× artistic size multiplier for readability. Moon phase shading faces the sun and its dark hemisphere conceals stars. Reduced motion holds celestial geometry and phase while contrast follows live illumination. The original calendar lighting, bird/cottage schedules, and surface-weather rules are preserved.
+
 The renderer composites clear sky, celestial light, two cloud layers, and a landscape with shared day/night coverage. Thin clouds attenuate celestial light spatially; opaque clouds and foreground hide it completely. The lake receives a small broad sky tint. The alpha mask describes sky visibility, not general depth: birds still use the existing overlay order, and cloud-shaped reflections, terrain shadows, and a precise astronomical model remain outside this version.
 
 The original paintings remain intact. Missing or invalid sky assets, insufficient GPU limits, shader failure, and context loss show the appropriate original day/night painting without a procedural moon over its baked clouds. Restoration replaces the complete GPU resource set and reveals it only after a full frame.
@@ -63,7 +65,9 @@ A_VIEW_DB="$(mktemp -d)/world.sqlite" PORT=4174 npm start
 
 Open that HTTP address in the browser while the server is running. Opening `public/dev/sky-study.html` directly as a `file://` page cannot load the application's modules. With a regular `npm start`, use port 4173 instead.
 
-The preview provides independent elapsed time, motion time, calendar hour, cloud cover, fixed moon pose, layer visibility, alpha/transmission inspection, context-loss simulation, and production-shader pixel checks. Press **H** to hide its controls. It never writes fixture inputs to the world.
+The preview opens at equinox sunrise and provides a world day/hour scrubber, calendar playback at normal/day/lunar-cycle speeds, seasonal and lunar fixtures, camera calibration, horizon and trajectory guides, and visibility diagnostics. It also retains independent elapsed/motion time, cloud cover, a controlled moon pose, layer visibility, alpha/transmission inspection, context-loss simulation, and production-shader pixel checks. Press **H** to hide its controls. It never writes fixture inputs to the world.
+
+Run `scripts/check-celestial-browser.mjs` with the same optional Playwright setup to check ridge crossings, daytime phases, star occlusion, controls, crops, and moving-sky upload cost. `CELESTIAL_RECORD=1` additionally records rise time-lapses and real-speed motion using FFmpeg; `CELESTIAL_FRAME_DIR` selects a directory for intermediate frames. `SKY_VALIDATION_DIR` selects an output directory for the celestial, sky browser, and display checks. See [celestial validation](docs/celestial-validation/README.md) for results and recordings.
 
 `scripts/check-sky-browser.mjs` automates shader, lifecycle, fallback, viewport, and performance checks using optional development-only Playwright. `scripts/check-sky-display.mjs` exercises visitor controls and clock boundaries. Set `SKY_PREVIEW_URL` for a different local port, `BROWSER_EXECUTABLE` for an existing Chromium binary, and `SKY_LONG_CHECK=1` for a one-minute crossing. The asset exporter uses optional development-only Sharp; neither package is a runtime dependency. See [verification results](docs/sky-validation/README.md) for measurements and remaining physical-device validation.
 
@@ -93,6 +97,7 @@ The world is shared by browsers connected to the same server. The application bi
 - `src/server.js`: static delivery, world snapshot API, and shared event stream.
 - `public/painting.js`: WebGL art rendering and lightweight Canvas animation.
 - `shared/wind.js` and `shared/sky.js`: pure wind integration, deterministic cloud state, and celestial pose.
+- `shared/celestial.js` and `shared/celestial-projection.js`: continuous orbital directions, inclined lunar phases, seeded stars, and projection into the authored sky camera. `shared/solar.js` retains the exact legacy calendar declination curve.
 - `public/sky-renderer.js`: premultiplied sky composition, validated assets, cached celestial uploads, and GPU resource ownership.
 - `shared/foliage.js` and `shared/lakeside-foliage.js`: deterministic breeze sampling, anchored mesh weights, and the authored patch layout.
 - `public/foliage-renderer.js`: validated foliage bundles, registered atlas blending, mesh rendering, and GPU resource cleanup.
