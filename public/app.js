@@ -1,10 +1,11 @@
-import { calendar, clockLabel, viewConditions } from '/shared/world.js';
+import { clockLabel, viewConditions } from '/shared/world.js';
 import { Painting } from './painting.js';
 import { Ambience } from './sound.js';
 import { WorldClient } from './world-client.js';
 import { sceneText } from './scene-description.js';
 import {cottageDescription} from '/shared/cottage.js';
 import {birdDescription} from '/shared/bird.js';
+import {FieldNotes} from './field-notes.js';
 
 const $=selector=>document.querySelector(selector);
 const icons={
@@ -21,7 +22,8 @@ document.querySelectorAll('[data-icon]').forEach(element=>icon(element,element.d
 icon($('#sound-button .icon'),'muted');
 const painter=new Painting($('#painting'),$('#life')),audio=new Ambience();
 const client=new WorldClient({onSnapshot:accept});
-let snapshot=null,pausedSnapshot=null,pausedAt=null,study=null,lastRender=0,lastLabels=0,lastEventSeq=null,seenEventSeq=0,connection='connecting',toastTimer,quietTimer;
+const fieldNotes=new FieldNotes();
+let snapshot=null,pausedSnapshot=null,pausedAt=null,study=null,lastRender=0,lastLabels=0,connection='connecting',toastTimer,quietTimer;
 let followed=false;try{followed=localStorage.getItem('a-view:follow:lakeside-cottage')==='true';}catch{}
 const now=()=>pausedAt??client.now();
 function toast(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').classList.add('show');toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3500);}
@@ -30,7 +32,7 @@ function wake(){document.querySelectorAll('.chrome').forEach(e=>e.classList.remo
 addEventListener('pointermove',wake,{passive:true});addEventListener('pointerdown',wake,{passive:true});addEventListener('keydown',wake);addEventListener('focusin',wake);
 function openPanel(id){$(id).showModal();wake();}
 $('#about-button').onclick=()=>openPanel('#about-dialog');
-$('#notes-button').onclick=()=>{seenEventSeq=lastEventSeq??0;$('#note-dot').hidden=true;openPanel('#notes-dialog');};
+$('#notes-button').onclick=()=>{openPanel('#notes-dialog');fieldNotes.open();};
 $('#explore-button').onclick=()=>openPanel('#explore-dialog');
 $('#current-place').onclick=()=>$('#explore-dialog').close();
 document.querySelectorAll('dialog').forEach(dialog=>{
@@ -65,22 +67,9 @@ $('#return-live').onclick=()=>{study=null;document.querySelectorAll('[data-light
 function accept(data){
   // WorldClient has checked ordering and anchored the shared clock before this callback.
   snapshot=data;connection='live';
-  const eventSeq=data.events?.[0]?.seq??0;
-  if(lastEventSeq===null)seenEventSeq=eventSeq;
-  if($('#notes-dialog').open)seenEventSeq=eventSeq;
-  $('#note-dot').hidden=eventSeq<=seenEventSeq;
-  if(eventSeq!==lastEventSeq){updateNotes();lastEventSeq=eventSeq;}
   updateLabels();
 }
 function refresh(){return client.refresh();}
-function updateNotes(){
-  if(!snapshot)return;
-  const list=$('#event-list');list.replaceChildren();
-  for(const event of snapshot.events){
-    const li=document.createElement('li'),time=document.createElement('time'),text=document.createElement('p');
-    const c=calendar(snapshot.world.epoch,event.at);time.textContent=`YEAR ${c.year} · DAY ${c.dayOfYear+1} · ${clockLabel(c.hour)}`;time.dateTime=new Date(event.at).toISOString();text.textContent=event.text;li.append(time,text);list.appendChild(li);
-  }
-}
 function updateLabels(){
   if(!snapshot)return;
   const shownSnapshot=pausedSnapshot??snapshot;
@@ -107,6 +96,7 @@ function frame(timestamp){
   lastRender=timestamp-(timestamp-lastRender)%(1000/30);
   if(snapshot){
     const displayedNow=now(),shown=pausedSnapshot??snapshot,result=painter.render(shown,displayedNow,study);
+    fieldNotes.update(shown,{live:pausedAt===null&&!study,valid:!client.needsRefresh(),study:!!study,paused:pausedAt!==null,visible:!document.hidden});
     if(result)audio.update(result.calendar.light,result.weather.rain,{bird:shown.world.bird,now:displayedNow,
       active:pausedAt===null&&!study&&!client.needsRefresh()&&painter.birdActive,
       validUntil:Math.min(shown.validUntil,shown.nextCommitAt??Infinity)});
@@ -117,7 +107,12 @@ let dragging=false,previousX=0;
 $('#world').addEventListener('pointerdown',e=>{dragging=true;previousX=e.clientX;$('#world').setPointerCapture(e.pointerId);});
 $('#world').addEventListener('pointermove',e=>{if(dragging){painter.panBy(e.clientX-previousX);previousX=e.clientX;}});
 $('#world').addEventListener('pointerup',()=>dragging=false);$('#world').addEventListener('pointercancel',()=>dragging=false);
-document.addEventListener('visibilitychange',()=>{audio.visibility().catch(error=>console.warn('Audio visibility update failed',error));if(!document.hidden)refresh().catch(()=>{connection='reconnecting';updateLabels();});});
+document.addEventListener('visibilitychange',()=>{
+  audio.visibility().catch(error=>console.warn('Audio visibility update failed',error));
+  if(document.hidden){fieldNotes.visible=false;fieldNotes.cancel();fieldNotes.memory.flush(true);}
+  else refresh().catch(()=>{connection='reconnecting';updateLabels();});
+});
+addEventListener('storage',event=>fieldNotes.storageChanged(event));
 
 // Displayed conditions can select the fallback while optional sky assets load.
 requestAnimationFrame(frame);
@@ -128,4 +123,4 @@ stream.onerror=()=>{connection='reconnecting';updateLabels();wake();};
 setInterval(()=>{if(!document.hidden)client.recover(connection!=='live').catch(()=>{connection='reconnecting';updateLabels();});},1000);
 wake();
 // A bfcache suspension keeps the renderer; permanent navigation releases it.
-addEventListener('pagehide',event=>{if(!event.persisted)painter.dispose();});
+addEventListener('pagehide',event=>{fieldNotes.cancel();fieldNotes.memory.flush(true);if(!event.persisted)painter.dispose();});

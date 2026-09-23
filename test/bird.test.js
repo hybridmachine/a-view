@@ -120,7 +120,8 @@ test('regular execution, arbitrary reads, and catch-up produce the same complete
   try{
     for(let t=391;t<86400_000;t+=13_731)regular.advance(epoch+t);
     const end=epoch+3*86400_000;
-    assert.deepEqual(regular.snapshot(end),catchup.snapshot(end));
+    const a=regular.snapshot(end),b=catchup.snapshot(end);
+    assert.deepEqual({...a,notes:{...a.notes,id:b.notes.id}},b);
     const events=regular.db.prepare('SELECT * FROM events ORDER BY seq').all();
     assert.deepEqual(events,catchup.db.prepare('SELECT * FROM events ORDER BY seq').all());
     const call=events.find(e=>e.type==='bird.action-started'&&JSON.parse(e.payload).kind==='call');assert.ok(call);

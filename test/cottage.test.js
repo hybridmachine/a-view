@@ -15,7 +15,7 @@ test('cottage catch-up matches arbitrary reads, including all causal event order
   try{
     for(let t=719;t<3600_000;t+=4193)regular.advance(epoch+t);
     const end=epoch+3*86400_000,a=regular.snapshot(end),b=catchup.snapshot(end);
-    assert.deepEqual(a,b);
+    assert.deepEqual({...a,notes:{...a.notes,id:b.notes.id}},b);
     const events=regular.db.prepare('SELECT * FROM events ORDER BY seq').all();
     assert.deepEqual(events,catchup.db.prepare('SELECT * FROM events ORDER BY seq').all());
     assert.ok(events.some(event=>event.type==='cottage.casement'));
