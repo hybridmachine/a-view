@@ -42,7 +42,7 @@ export function summarizeNotes(db,history,interval) {
     const event=latest.get(type,after.seq,through.seq);if(!event)continue;
     const p=payloadOf(event),habit=type==='bird.habit-noticed';
     let valid=inInterval(event)&&p?.birdId==='oak-bird-01'&&p.kind==='flight'&&p.rulesVersion===1&&p.end===event.at&&
-      p.to===(habit?'oak-perch':'roof-perch')&&typeof p.actionId==='string'&&event.id===`${p.actionId}:${habit?'habit-noticed':'roof-noticed'}`;
+      p.to===(habit?'oak-perch':'roof-perch')&&typeof p.actionId==='string'&&p.actionId.length>0&&event.id===`${p.actionId}:${habit?'habit-noticed':'roof-noticed'}`;
     const proofs=[];
     if(habit){
       valid=valid&&Array.isArray(p?.returns)&&p.returns.length===3&&p.returns.every(r=>typeof r?.id==='string'&&Number.isSafeInteger(r.day))&&new Set(p.returns.map(r=>r.day)).size===3;
@@ -53,6 +53,7 @@ export function summarizeNotes(db,history,interval) {
           !['oak-shelter','roof-perch'].includes(q.from)||q.end!==e.at||calendar(history.epoch,e.at).day!==r.day){valid=false;break;}
         proofs.push(e);
       }
+      valid=valid&&proofs.some(e=>e.id===`${p.actionId}:action-completed`&&e.at===event.at);
     }
     if(valid)add(habit?'bird-habit':'bird-roof',event,proofs);else result.coverage='partial';
   }

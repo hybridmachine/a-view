@@ -86,7 +86,7 @@ test('notes metadata persists across restart without changing simulation version
   }finally{rmSync(directory,{recursive:true,force:true});}
 });
 
-test('habit evidence must identify the completion of its own action',()=>{
+test('habit notice and evidence must identify their completed actions',()=>{
   const store=new WorldStore(':memory:',epoch);
   try{
     const a=store.snapshot(epoch),b=store.snapshot(epoch+86_400_000),q=interval(a,b);
@@ -100,6 +100,20 @@ test('habit evidence must identify the completion of its own action',()=>{
       assert.equal(result.coverage,'partial');assert.ok(!result.facts.some(f=>f.kind==='bird-habit'));
     }
     store.db.prepare('UPDATE events SET payload=? WHERE id=?').run(proof.payload,proof.id);
+    assert.deepEqual(store.notes(q),valid);
+    const notice=store.db.prepare('SELECT * FROM events WHERE id=?').get(habit.event.id);
+    const noticePayload=JSON.parse(notice.payload);
+    const unrelated=store.db.prepare("SELECT payload FROM events WHERE type='bird.action-completed'").all()
+      .map(row=>JSON.parse(row.payload)).find(p=>p.kind==='flight'&&p.to==='oak-perch'&&
+        !habit.supporting.some(s=>s.id===`${p.actionId}:action-completed`));
+    assert.ok(unrelated,'fixture includes an actual return outside the three habit proofs');
+    for(const actionId of [unrelated.actionId,'',null]){
+      store.db.prepare('UPDATE events SET id=?,payload=? WHERE seq=?').run(
+        `${actionId}:habit-noticed`,JSON.stringify({...noticePayload,actionId}),notice.seq);
+      const result=store.notes(q);
+      assert.equal(result.coverage,'partial');assert.ok(!result.facts.some(f=>f.kind==='bird-habit'));
+    }
+    store.db.prepare('UPDATE events SET id=?,payload=? WHERE seq=?').run(notice.id,notice.payload,notice.seq);
     assert.deepEqual(store.notes(q),valid);
   }finally{store.close();}
 });
