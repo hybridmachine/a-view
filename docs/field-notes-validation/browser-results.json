@@ -240,6 +240,22 @@
       "pass": true
     },
     {
+      "name": "Forget notice clears once the new baseline is saved",
+      "pass": true
+    },
+    {
+      "name": "Delayed recap leaves later same-visit notes unread",
+      "pass": true
+    },
+    {
+      "name": "Reopening acknowledges the newer recent notes",
+      "pass": true
+    },
+    {
+      "name": "History-reset notice clears once the new baseline is saved",
+      "pass": true
+    },
+    {
       "name": "Closing a pending recap does not acknowledge notes",
       "pass": true
     },

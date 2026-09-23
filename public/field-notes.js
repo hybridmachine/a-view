@@ -21,14 +21,14 @@ export class FieldNotes {
       try{if(performance.getEntriesByType('navigation')[0]?.type==='navigate')session?.removeItem(SESSION_KEY);}catch{}
       memory=new VisitMemory({local,session});
     }
-    this.memory=memory;this.serial=0;this.summary=null;this.error=false;this.forgot=false;
+    this.memory=memory;this.serial=0;this.summary=null;this.error=false;this.forgot=false;this.resetNotice=false;this.readHistory=null;
     this.$=selector=>root.querySelector(selector);
     this.$('#forget-visits').onclick=()=>{
       this.cancel();this.memory.forget();this.summary=null;this.error=false;this.forgot=true;
       this.render();
     };
     this.$('#retry-notes').onclick=()=>{this.error=false;this.render();this.load();};
-    this.$('#notes-dialog').addEventListener('close',()=>this.cancel());
+    this.$('#notes-dialog').addEventListener('close',()=>{this.cancel();this.readHistory=null;});
   }
   cancel() {this.serial++;this.pending?.abort();this.pending=null;}
   storageChanged(event) {
@@ -46,13 +46,18 @@ export class FieldNotes {
     if(live&&valid&&visible&&(snapshot!==this.observedSnapshot||!this.memory.visit)){
       this.memory.observe(snapshot);this.observedSnapshot=snapshot;
     }
-    if(generation!==this.memory.generation){this.cancel();this.summary=null;this.error=false;}
+    if(generation!==this.memory.generation){this.cancel();this.summary=null;this.error=false;this.forgot=false;this.resetNotice=false;}
     if(changed||mode!==this.renderedMode||generation!==this.memory.generation){
       this.renderedMode=mode;this.render();
     }
-    if(this.$('#notes-dialog').open&&visible){this.load();this.acknowledge();}
+    if(this.$('#notes-dialog').open&&visible){this.captureReadHistory();this.load();this.acknowledge();}
   }
-  open() {this.render();this.load();this.acknowledge();}
+  captureReadHistory() {
+    // Hold the history presented on opening (or its first loaded snapshot).
+    // A later stream update must not extend what a pending recap acknowledges.
+    if(!this.readHistory&&validHistory(this.snapshot?.notes))this.readHistory=structuredClone(this.snapshot.notes);
+  }
+  open() {this.readHistory=null;this.captureReadHistory();this.render();this.load();this.acknowledge();}
   async load() {
     const interval=this.memory.interval;
     if(!this.$('#notes-dialog').open||!this.visible||!interval||!validHistory(this.snapshot?.notes)||
@@ -76,7 +81,7 @@ export class FieldNotes {
     // A failed/pending recap cannot consume unread history.
     if(this.memory.interval&&(!sameInterval(this.summary,this.memory.interval)||this.summary.coverage!=='complete'))return;
     if(this.pending||this.error)return;
-    this.memory.read(this.snapshot.notes);this.dot();
+    this.memory.read(this.readHistory);this.dot();
   }
   dot() {this.$('#note-dot').hidden=!this.memory.unread(this.snapshot?.notes);}
   render() {

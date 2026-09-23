@@ -13,7 +13,7 @@ const validVisit=v=>v?.version===1&&validIdentity(v.identity)&&(v.baseline===nul
   (!v.baseline||v.baseline.at>=v.identity.epoch&&ordered(v.baseline,v.end))&&ordered(v.end,v.last);
 const sameRecord=(a,b)=>sameIdentity(a.identity,b.identity)&&a.observed.at===b.observed.at&&sameCursor(a.observed.cursor,b.observed.cursor)&&sameCursor(a.read,b.read);
 const clone=value=>structuredClone(value);
-const later=(a,b)=>!a?b:!b?a:b.at>a.at&&b.cursor.seq>=a.cursor.seq?b:a;
+const later=(a,b)=>!a?b:!b?a:b.cursor.seq>=a.cursor.seq&&(b.at>a.at||b.at===a.at&&b.cursor.seq>a.cursor.seq)?b:a;
 const greater=(a,b)=>b.seq>a.seq?b:a;
 
 // Storage is injected so privacy modes and competing tabs use the same tested path.
@@ -40,7 +40,8 @@ export class VisitMemory {
     this.merge(stored);
     // Another tab may have a slightly newer accepted snapshot. Wait to catch up;
     // that is not a world reset and must not erase its forward progress.
-    if(sameIdentity(this.record?.identity,identity)&&this.record.observed.at>observation.at)return false;
+    if(sameIdentity(this.record?.identity,identity)&&(this.record.observed.at>observation.at||
+      this.record.observed.at===observation.at&&this.record.observed.cursor.seq>observation.cursor.seq))return false;
     const compatible=sameIdentity(this.record?.identity,identity)&&this.record.observed.at<=observation.at&&
       this.record.observed.cursor.seq<=observation.cursor.seq&&
       (this.record.observed.cursor.seq!==observation.cursor.seq||sameCursor(this.record.observed.cursor,observation.cursor));

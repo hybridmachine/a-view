@@ -11,8 +11,8 @@ await mkdir(directory,{recursive:true});
 const results=[],errors=[],epoch=1_800_000_000_000;
 const check=(name,pass,detail)=>{results.push({name,pass,...(detail===undefined?{}:{detail})});console.log(`${pass?'PASS':'FAIL'} ${name}`);};
 const store=new WorldStore(':memory:',epoch);
-const first=store.snapshot(epoch),strand=store.snapshot(epoch+28_000);
-let complete=strand;while(complete.world.action)complete=store.snapshot(complete.world.action.end);
+const first=store.snapshot(epoch),strand=store.snapshot(epoch+28_000),nextStrand=store.snapshot(strand.world.action.end);
+let complete=nextStrand;while(complete.world.action)complete=store.snapshot(complete.world.action.end);
 const day=store.snapshot(epoch+86_400_000),month=store.snapshot(epoch+30*86_400_000);
 const request=(a,b)=>({identity:identityOf(b.notes),after:a.notes.head,through:b.notes.head});
 const browser=await chromium.launch({headless:true,
@@ -30,7 +30,7 @@ async function fixture({previous,current,width=1440,fail=false,blocked=false}={}
     if(state.delay)await state.delay;
     if(state.fail)return r.fulfill({status:503,body:'Unavailable'});
     const q=JSON.parse(new URL(r.request().url()).searchParams.get('interval'));
-    await r.fulfill({json:store.notes(q)});
+    await r.fulfill({json:state.reset?{...q,coverage:'reset',facts:[]}:store.notes(q)});
   });
   await context.addInitScript(({previous,key,blocked})=>{
     Object.defineProperty(performance,'now',{value:()=>10000});
@@ -110,6 +110,30 @@ try{
     await page.locator('#forget-visits').click();
     await page.waitForFunction(()=>document.querySelector('#recap-heading').textContent==='A place to return to');
     check('Forget resets recap and preserves Follow',await page.evaluate(()=>localStorage.getItem('a-view:follow:lakeside-cottage')==='true')&&!(await page.locator('#recap-text').textContent()).includes('nest was finished'));
+    await page.waitForFunction(()=>document.querySelector('#recap-text').textContent.startsWith('This browser will remember'));
+    check('Forget notice clears once the new baseline is saved',(await memory(page)).observed.at===month.serverTime);
+    await context.close();
+  }
+  {
+    const {context,page,state}=await fixture({previous:first,current:strand});
+    let release;state.delay=new Promise(r=>{release=r;});
+    const requested=page.waitForRequest('**/api/notes?*');
+    await page.locator('#notes-button').click();await requested;
+    state.current=nextStrand;await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+    await page.waitForFunction(count=>document.querySelector('#event-list').children.length===count,nextStrand.events.length);
+    state.delay=null;release();
+    await page.waitForFunction(()=>!document.querySelector('#recap-text').textContent.includes('Looking back'));
+    await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+    check('Delayed recap leaves later same-visit notes unread',(await memory(page)).read.seq===strand.notes.head.seq&&await page.locator('#note-dot').isVisible());
+    await close(page);await open(page);
+    check('Reopening acknowledges the newer recent notes',(await memory(page)).read.seq===nextStrand.notes.head.seq&&await page.locator('#note-dot').isHidden()&&state.notesRequests===1);
+    await context.close();
+  }
+  {
+    const {context,page,state}=await fixture({previous:first,current:strand});state.reset=true;
+    await open(page);
+    await page.waitForFunction(()=>document.querySelector('#recap-text').textContent.startsWith('This browser will remember'));
+    check('History-reset notice clears once the new baseline is saved',(await memory(page)).observed.at===strand.serverTime);
     await context.close();
   }
   {

@@ -5,8 +5,8 @@ Validated September 22, 2026, with review fixes checked September 23, using Node
 | Check | Result |
 | --- | --- |
 | `npm run check` | Passed |
-| `npm test` | 100 passed, including 14 field-note tests |
-| [Field-note browser checks](browser-results.json) | 56 passed; no uncaught browser errors |
+| `npm test` | 103 passed, including 17 field-note tests |
+| [Field-note browser checks](browser-results.json) | 60 passed; no uncaught browser errors |
 | [Existing visitor-display checks](display-results.json) | 12 passed |
 | [Existing bird checks](bird-browser-results.json) | 18 passed, including quiet notes, pause, studies, and sound |
 
@@ -26,7 +26,9 @@ The history identity is stored in an additive `metadata` table; an additive `not
 
 The legacy final delivery is recognized by its known type and `delivery-12` ID, not by prose. The three-day bird claim validates the milestone payload and its three actual completed-return records, including matching each completion ID to the action ID in its payload. Current nest state alone is never used to infer when completion occurred.
 
-Review fixes replace cross-world timestamp comparisons with explicit permission to replace this tab's previously displayed history identity. The permission is consumed after publication and cannot overwrite a third identity that superseded that predecessor. Regressions cover replacement clocks both ahead of and behind the old tab, continued old-history observation, joining the replacement, and a competing third history. Mismatched, empty, or missing action IDs in bird-habit proofs now yield partial coverage and omit the unsupported habit claim. Syntax checks, the full 100-test suite, and the 56 focused browser checks were rerun for these fixes; the display/bird reports and performance measurements remain from the initial implementation.
+Review fixes replace cross-world timestamp comparisons with explicit permission to replace this tab's previously displayed history identity. The permission is consumed after publication and cannot overwrite a third identity that superseded that predecessor. Regressions cover replacement clocks both ahead of and behind the old tab, continued old-history observation, joining the replacement, and a competing third history. Mismatched, empty, or missing action IDs in bird-habit proofs now yield partial coverage and omit the unsupported habit claim.
+
+Reading is bounded by the history captured when the panel opens. A delayed recap cannot consume later notes, including on subsequent animation frames; reopening acknowledges the newer recent notes. Equal-time observations and cross-tab merges retain the greater event sequence, and stale equal-time snapshots cannot erase that progress. Reset and forget notices remain until a fresh live baseline is saved, then clear. Three regression tests reproduced these review findings before their fixes, and browser checks cover the request race and both notices. Syntax checks, the full 103-test suite, and 60 focused browser checks pass; the display/bird reports and performance measurements remain from the initial implementation.
 
 ## Query cost
 

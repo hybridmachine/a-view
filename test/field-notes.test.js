@@ -126,6 +126,25 @@ test('long tab absence starts a visit from its last live observation; writes are
   assert.deepEqual(memory.interval,interval(b,later));assert.equal(writes,3);
 });
 
+test('equal-time observations and tab merges keep the greater event cursor',()=>{
+  const {a,b}=snapshots(),local=storage(),session=storage();
+  const memory=new VisitMemory({local,session});memory.observe(a);
+  const laterAtSameTime={...b,serverTime:a.serverTime};
+  memory.observe(laterAtSameTime);memory.read(b.notes);
+  assert.deepEqual(memory.record.observed,{at:a.serverTime,cursor:b.notes.head});
+  assert.deepEqual(memory.visit.last,memory.record.observed);
+  assert.deepEqual(memory.record.read,b.notes.head);
+  const reloaded=new VisitMemory({local,session});reloaded.observe(laterAtSameTime);
+  assert.deepEqual(reloaded.record.observed,memory.record.observed);
+  const peer=new VisitMemory({local:storage(),session:storage()});peer.observe(a);
+  peer.storageChanged(JSON.stringify(memory.record));
+  assert.deepEqual(peer.record.observed,memory.record.observed);
+  assert.deepEqual(peer.record.read,b.notes.head);
+  assert.equal(peer.observe(a),false,'a stale equal-time snapshot must not reset merged progress');
+  assert.deepEqual(peer.record.observed,memory.record.observed);
+  assert.deepEqual(peer.record.read,b.notes.head);
+});
+
 test('competing tab writes converge forward without changing active baselines',()=>{
   const {a,b,c}=snapshots(),local=storage();let time=0;
   const x=new VisitMemory({local,session:storage(),clock:()=>time});x.observe(a);
@@ -202,6 +221,48 @@ test('panel never observes hidden, paused, study, or invalid frames; pending/lat
   assert.equal(panel.summary,null);assert.equal(returning.unread(b.notes),true);
   panel.update(c,{live:true,valid:true});panel.cancel();
   assert.equal(returning.unread(c.notes),true);
+});
+
+test('a completed recap acknowledges only its captured panel history until reopening',async()=>{
+  const store=new WorldStore(':memory:',epoch),local=storage(),root=fakeRoot();
+  try{
+    const a=store.snapshot(epoch),b=store.snapshot(epoch+28_000),c=store.snapshot(b.world.action.end);
+    assert.ok(c.serverTime-b.serverTime<VISIT_GAP_MS);
+    new VisitMemory({local,session:storage()}).observe(a);
+    const memory=new VisitMemory({local,session:storage()});let resolve;
+    const panel=new FieldNotes({root,memory,request:()=>new Promise(r=>{resolve=r;})});
+    panel.update(b,{live:true,valid:true});root.querySelector('#notes-dialog').open=true;panel.open();
+    const q=memory.interval;panel.update(c,{live:true,valid:true});
+    assert.deepEqual(memory.interval,q,'new notes arrive during the same visit/request');
+    resolve(store.notes(q));await new Promise(r=>setImmediate(r));
+    assert.deepEqual(memory.record.read,b.notes.head);
+    for(let i=0;i<3;i++)panel.update(c,{live:true,valid:true});
+    assert.deepEqual(memory.record.read,b.notes.head,'later frames cannot advance the captured boundary');
+    assert.equal(root.querySelector('#note-dot').hidden,false);
+    root.querySelector('#notes-dialog').open=false;
+    root.querySelector('#notes-dialog').open=true;panel.open();
+    assert.deepEqual(memory.record.read,c.notes.head,'reopening explicitly reads the current recent notes');
+    assert.equal(root.querySelector('#note-dot').hidden,true);
+  }finally{store.close();}
+});
+
+test('reset and forget notices clear only after a fresh live baseline is established',async()=>{
+  const {a,b}=snapshots();
+  for(const kind of ['reset','forget']){
+    const local=storage(),root=fakeRoot();new VisitMemory({local,session:storage()}).observe(a);
+    const memory=new VisitMemory({local,session:storage()});
+    const panel=new FieldNotes({root,memory,request:async q=>({...q,coverage:'reset',facts:[]})});
+    panel.update(b,{live:true,valid:true});
+    if(kind==='reset'){
+      root.querySelector('#notes-dialog').open=true;panel.open();await new Promise(r=>setImmediate(r));
+      assert.equal(panel.resetNotice,true);
+    }else{root.querySelector('#forget-visits').onclick();assert.equal(panel.forgot,true);}
+    const notice=root.querySelector('#recap-text').textContent;
+    panel.update(b,{paused:true,valid:true});assert.equal(root.querySelector('#recap-text').textContent,notice);
+    panel.update(b,{live:true,valid:true});
+    assert.equal(panel.forgot,false);assert.equal(panel.resetNotice,false);
+    assert.ok(memory.visit);assert.match(root.querySelector('#recap-text').textContent,/This browser will remember your visit/);
+  }
 });
 
 test('client accepts a newer replacement world but rejects malformed notes identity',()=>{
