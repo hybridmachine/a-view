@@ -1,0 +1,39 @@
+{
+  "node": "v26.7.0",
+  "results": [
+    {
+      "realDays": 30,
+      "eventCount": 10951,
+      "visibleCount": 377,
+      "medianMs": 0.19099999999997408,
+      "p95Ms": 0.26020799999997735,
+      "responseBytes": 661,
+      "facts": [
+        "nest-completed",
+        "bird-habit"
+      ],
+      "coverage": "complete",
+      "stateUnchanged": true,
+      "selectionPlan": [
+        "SEARCH events USING INDEX notes_by_type (noteVisible=? AND type=? AND seq>? AND seq<?)"
+      ]
+    },
+    {
+      "realDays": 365,
+      "eventCount": 132101,
+      "visibleCount": 4453,
+      "medianMs": 1.678625000000011,
+      "p95Ms": 3.5957079999998314,
+      "responseBytes": 663,
+      "facts": [
+        "nest-completed",
+        "bird-habit"
+      ],
+      "coverage": "complete",
+      "stateUnchanged": true,
+      "selectionPlan": [
+        "SEARCH events USING INDEX notes_by_type (noteVisible=? AND type=? AND seq>? AND seq<?)"
+      ]
+    }
+  ]
+}

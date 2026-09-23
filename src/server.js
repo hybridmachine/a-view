@@ -16,6 +16,17 @@ const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'same-origin');
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); res.end(); return; }
+    if (url.pathname === '/api/notes') {
+      const raw=url.searchParams.get('interval');
+      let interval;
+      try {
+        if(!raw||raw.length>2048||url.search.length>4096)throw new Error();
+        interval=JSON.parse(raw);
+      }catch { res.writeHead(400,{'Cache-Control':'no-store'});res.end('Invalid notes interval');return; }
+      const notes=store.notes(interval);
+      res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});
+      res.end(req.method==='HEAD'?undefined:JSON.stringify(notes));return;
+    }
     if (url.pathname === '/api/world') {
       const snapshot = store.snapshot();
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -38,7 +49,8 @@ const server = createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': types[extname(path)] || 'application/octet-stream', 'Cache-Control': path.includes('/assets/') ? 'public, max-age=86400' : 'no-cache', 'Content-Length': body.length });
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch(error) {
-    if (error.code === 'WORLD_CATCHING_UP' && !res.headersSent) { res.writeHead(503, {'Retry-After': '2'}); res.end('World is catching up'); }
+    if (error.code === 'INVALID_NOTES' && !res.headersSent) { res.writeHead(400,{'Cache-Control':'no-store'});res.end('Invalid notes interval'); }
+    else if (error.code === 'WORLD_CATCHING_UP' && !res.headersSent) { res.writeHead(503, {'Retry-After': '2'}); res.end('World is catching up'); }
     else if (error.code === 'ENOENT' || error.code === 'ENOTDIR') { res.writeHead(404); res.end('Not found'); }
     else { console.error(error); if (!res.headersSent) res.writeHead(500); res.end('Unable to load this view.'); }
   }

@@ -41,7 +41,7 @@ HTTP redirects to HTTPS; Caddy obtains and renews certificates automatically. Se
 - One persisted nest-building study: a bird collects strands and delivers them before material is added. Its action position agrees across visitors. Nine deliveries complete the initial nest; there is no fabricated subsequent breeding cycle.
 - A familiar bird that returns to a fixed oak perch after construction, rests behind the trunk, and sometimes visits the cottage roof. Its sparse opt-in call follows the same committed action across visitors.
 - Transactional SQLite state and event records. Catch-up after downtime produces the same nest, cottage, surface state, and causal event order as continuous execution.
-- Field notes derived from committed events, local follows, opt-in synthesized sound, fullscreen where supported, and a local pause that does not stop the world.
+- Field notes derived from committed events, with a short “Since you were here” recap and browser-local visit memory. Local follows, opt-in synthesized sound, fullscreen where supported, and a local pause that does not stop the world.
 - Private light studies available through the **a view.** mark. They do not change server state. **Return to live** restores the current shared time.
 - Narrow-screen panning by dragging the landscape, keyboard-accessible controls and dialogs, and reduced-motion support.
 
@@ -103,6 +103,8 @@ The world is shared by browsers connected to the same server. The application bi
 - `public/foliage-renderer.js`: validated foliage bundles, registered atlas blending, mesh rendering, and GPU resource cleanup.
 - `public/dev/sky-study.html`: isolated fixed-input preview and production-shader assertions.
 - `public/app.js`: timing synchronization, controls, field notes, and private preview state.
+- `public/field-notes.js`, `public/visit-memory.js`: optional return recaps, displayed-note progress, and local visit memory.
+- `shared/field-notes.js`, `src/notes-store.js`: fixed factual wording, validated history intervals, and indexed milestone selection.
 - `public/world-client.js`: snapshot ordering, monotonic display time, action boundaries, and reconnect recovery.
 - `public/scene-description.js`: precise accessible descriptions and quiet announcements for meaningful changes.
 - `public/sound.js`: optional synthesized ambience.
@@ -146,3 +148,13 @@ The original small Canvas silhouette is retained. A 96 × 96 subject canvas appl
 The old eight-second local chirp timer is replaced by rare shared phrase actions, committed five seconds ahead. Sound remains off until explicitly enabled. Muting, pause, studies, hidden tabs, or expired timing cancel pending phrases; late arrivals skip missed calls. General water ambience remains cosmetic. The bird's three-note phrase is synthesized and does not claim an authentic species song.
 
 The developer study adds oak, roof, shelter, and flight fixtures, a bird-action time slider, and route/occluder guides. Run `scripts/check-bird-browser.mjs` with the same optional Playwright settings as the other browser suites; `BIRD_RECORD=1` also records real-speed routes using Playwright's optional FFmpeg component. `node scripts/check-bird-state.mjs` measures day/month/year catch-up. See [bird validation](docs/bird-validation/README.md), [combined engagement review](docs/engagement-validation/README.md), and [the implementation plan](BIRD_FAMILIARITY_IMPLEMENTATION_PLAN.md).
+
+## Field notes and return visits
+
+Opening **Field notes** on a return visit shows up to two short observations about recorded changes since the previous live view. Nest completion, the established branch habit, the first roof visit, additional nest material, and a main-room light are eligible. Current observations and the latest 20 notes remain below the recap. Older milestones are retrieved separately, so a long absence does not lose them behind repeated cottage notes. The writing uses fixed, factual templates.
+
+Visit memory stays in this browser. A new navigation begins a visit, a reload preserves its recap, and returning to an existing tab after 30 real minutes without a live observation starts another. Hidden, paused, disconnected-at-boundary, and private-study views do not advance the saved live observation. Reading progress is separate: a failed or pending recap does not clear the unread dot. Pause holds the timeline as well as the painting; studies identify notes as shared-world history. **Forget visit memory** clears this feature's memory while preserving Follow. Storage restrictions leave the notes usable for the current visit.
+
+The read-only `/api/notes` endpoint validates a scene/history identity and event-ID/sequence anchors for an exclusive-start, inclusive-end interval. It returns at most two typed facts with supporting references. Identity metadata and an event index are additive SQLite changes; the simulated world remains version 4, with the same event scheduling and history. A replaced world or incompatible cursor starts a fresh baseline. The endpoint never advances the simulation or stores a visitor profile. Existing snapshots still carry only 20 recent notes plus compact history metadata.
+
+Run `node scripts/check-field-notes-state.mjs` for month/year query measurements. `scripts/check-field-notes-browser.mjs` uses the same optional Playwright, `SKY_PREVIEW_URL`, `BROWSER_EXECUTABLE`, and `SKY_GPU` configuration as the existing suites; its default preview port is 4175. `NOTES_VALIDATION_DIR` selects the output directory. It includes desktop/portrait copy fixtures, reloads, pause, studies, request failure/retry, storage denial, and cross-tab reading. See [field-notes validation](docs/field-notes-validation/README.md) and [the implementation plan](FIELD_NOTES_IMPLEMENTATION_PLAN.md).

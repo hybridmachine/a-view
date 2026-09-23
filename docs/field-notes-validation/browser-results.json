@@ -1,0 +1,260 @@
+{
+  "browser": "140.0.7339.186",
+  "results": [
+    {
+      "name": "HTTP notes contract and no-store",
+      "pass": true
+    },
+    {
+      "name": "Malformed intervals return 400",
+      "pass": true
+    },
+    {
+      "name": "HEAD and read-only methods",
+      "pass": true
+    },
+    {
+      "name": "first-visit: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "first-visit: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "This browser will remember your visit. Small changes will be gathered here when you return."
+      }
+    },
+    {
+      "name": "first-visit: quiet read",
+      "pass": true
+    },
+    {
+      "name": "first-visit: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "nest-progress: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "nest-progress: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "The bird brought another strand to the nest."
+      }
+    },
+    {
+      "name": "nest-progress: quiet read",
+      "pass": true
+    },
+    {
+      "name": "nest-progress: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "nest-complete: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "nest-complete: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "The nest was finished."
+      }
+    },
+    {
+      "name": "nest-complete: quiet read",
+      "pass": true
+    },
+    {
+      "name": "nest-complete: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "bird-habit: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "bird-habit: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "The bird returned to the same branch on three days. The main-room light came on."
+      }
+    },
+    {
+      "name": "bird-habit: quiet read",
+      "pass": true
+    },
+    {
+      "name": "bird-habit: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "cottage-only: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "cottage-only: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "The bird paused on the cottage roof. The main-room light came on."
+      }
+    },
+    {
+      "name": "cottage-only: quiet read",
+      "pass": true
+    },
+    {
+      "name": "cottage-only: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "quiet-return: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "quiet-return: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "No new field notes since your last visit."
+      }
+    },
+    {
+      "name": "quiet-return: quiet read",
+      "pass": true
+    },
+    {
+      "name": "quiet-return: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "long-absence: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "long-absence: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "The nest was finished. The bird returned to the same branch on three days."
+      }
+    },
+    {
+      "name": "long-absence: quiet read",
+      "pass": true
+    },
+    {
+      "name": "long-absence: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "Long absence is independent of recent-20 list",
+      "pass": true
+    },
+    {
+      "name": "Reload preserves the recap interval",
+      "pass": true
+    },
+    {
+      "name": "Keyboard opening, Escape, and focus return",
+      "pass": true
+    },
+    {
+      "name": "Recap fetched only on demand and cached during visit",
+      "pass": true,
+      "detail": {
+        "requests": 2
+      }
+    },
+    {
+      "name": "portrait: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "portrait: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "The nest was finished. The bird returned to the same branch on three days."
+      }
+    },
+    {
+      "name": "portrait: quiet read",
+      "pass": true
+    },
+    {
+      "name": "portrait: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "narrow-portrait: no automatic panel",
+      "pass": true
+    },
+    {
+      "name": "narrow-portrait: factual recap",
+      "pass": true,
+      "detail": {
+        "text": "The nest was finished. The bird returned to the same branch on three days."
+      }
+    },
+    {
+      "name": "narrow-portrait: quiet read",
+      "pass": true
+    },
+    {
+      "name": "narrow-portrait: panel fits viewport",
+      "pass": true
+    },
+    {
+      "name": "Pause holds timeline and recap against newer snapshots",
+      "pass": true
+    },
+    {
+      "name": "Paused background snapshots do not advance observed memory",
+      "pass": true
+    },
+    {
+      "name": "Newer notes remain unread until resume/display",
+      "pass": true
+    },
+    {
+      "name": "Study identifies shared-world history",
+      "pass": true
+    },
+    {
+      "name": "Private studies do not advance visit observations",
+      "pass": true
+    },
+    {
+      "name": "Failed lookup is not described as no changes",
+      "pass": true
+    },
+    {
+      "name": "Failed recap leaves progress unread",
+      "pass": true
+    },
+    {
+      "name": "Explicit retry recovers history",
+      "pass": true
+    },
+    {
+      "name": "Forget resets recap and preserves Follow",
+      "pass": true
+    },
+    {
+      "name": "Closing a pending recap does not acknowledge notes",
+      "pass": true
+    },
+    {
+      "name": "Another tab preserves this visit baseline and recap",
+      "pass": true
+    },
+    {
+      "name": "Read progress synchronizes across tabs",
+      "pass": true
+    },
+    {
+      "name": "Blocked storage retains usable field notes",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

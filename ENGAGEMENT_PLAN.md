@@ -1,6 +1,6 @@
 # A View — quiet engagement
 
-Status: brainstorm recorded September 19, 2026. Weather traces and cottage life are implemented; the local checkout includes the September 20 merges of [PR #5](https://github.com/hybridmachine/a-view/pull/5) and [PR #6](https://github.com/hybridmachine/a-view/pull/6). A familiar bird with daily habits was selected and implemented on a feature branch on September 20. The combined review and bird validation evidence are linked below; uninterrupted human viewing and physical-device coverage remain review limitations. Deployment awaits human review.
+Status: brainstorm recorded September 19, 2026; updated September 22. Weather traces, cottage life, and the familiar bird are implemented and merged ([PR #5](https://github.com/hybridmachine/a-view/pull/5), [PR #6](https://github.com/hybridmachine/a-view/pull/6), and [PR #7](https://github.com/hybridmachine/a-view/pull/7)). Continuous celestial motion is also merged in [PR #8](https://github.com/hybridmachine/a-view/pull/8). Local “Since you were here” field notes are now implemented on `codex/field-notes`, with validation linked below. The reports retain the human-viewing and physical-device coverage limits; production deployment is separate.
 
 ## Creative direction
 
@@ -42,13 +42,17 @@ Detailed plans:
 
 Morning mist belongs to a later weather phase because it needs convincing depth and shoreline occlusion. A movable chair and visible resident belong to a later cottage phase because they need authored routes, handling actions, occlusion, and character art. The first releases should establish the systems and visual restraint those extensions depend on.
 
-## Familiar bird and daily habits — implemented for review
+## Familiar bird and daily habits — implemented and merged
 
-The feature branch gives the existing bird a preferred oak perch, a sheltered resting location, and a quiet routine after nest construction finishes. It also includes occasional roof visits and a recognizable call driven by shared action timing. See the [combined viewing evidence](docs/engagement-validation/README.md) and [bird validation](docs/bird-validation/README.md). The oak art pilot established the routes and small visual footprint before they were connected to the routine.
+The existing bird now has a preferred oak perch, a sheltered resting location, and a quiet routine after nest construction finishes. It also includes occasional roof visits and a recognizable call driven by shared action timing. See the [combined viewing evidence](docs/engagement-validation/README.md) and [bird validation](docs/bird-validation/README.md). The oak art pilot established the routes and small visual footprint before they were connected to the routine.
 
 The [familiar bird implementation plan](BIRD_FAMILIARITY_IMPLEMENTATION_PLAN.md) details the art pilot, routine, version-4 migration, legacy nest handover, shared timing, occlusion, display modes, field-note facts, audio, delivery milestones, and acceptance checks. It preserves the completed nest and defers eggs, breeding, aging, and a complete species lifecycle to a separate researched plan.
 
-After the bird establishes a useful history, local “Since you were here” notes are the likely next engagement addition. Image export, wider ambience, mist, a visible resident, and incidental events remain separate options.
+## Field notes that remember visits — implemented for review
+
+The [field notes implementation plan](FIELD_NOTES_IMPLEMENTATION_PLAN.md) is implemented as a short, optional “Since you were here” passage in the existing notes panel. Browser-local visit memory supplies the interval; committed events supply the facts. A bounded history lookup preserves older milestones after they leave the latest-20 note list. Copy/layout fixtures, history selection, visit memory, display-mode integration, and focused checks are recorded in [field-notes validation](docs/field-notes-validation/README.md).
+
+After field notes, “Keep this view” is the next recommended small addition. Wider ambience, quiet coincidences, mist, a visible resident, and a researched bird lifecycle remain separate options. This ordering is a planning recommendation, not a commitment to build every brainstorm item.
 
 ## Shared implementation principles
 

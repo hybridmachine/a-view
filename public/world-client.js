@@ -1,5 +1,6 @@
 import {validCottageState} from '../shared/cottage.js';
 import {validBirdState,birdBoundary} from '../shared/bird.js';
+import {validHistory,sameIdentity} from '../shared/field-notes.js';
 
 async function fetchSnapshot() {
   const response = await fetch('/api/world', {
@@ -14,6 +15,7 @@ const expectedBoundary=data=>Math.min(data.world.action?.end??Infinity,birdBound
 const boundary=data=>Math.min(data.nextCommitAt??Infinity,expectedBoundary(data));
 function validSnapshot(data){
   if(!data?.world||!Number.isFinite(data.serverTime)||!Number.isFinite(data.validUntil)||data.validUntil<data.serverTime||!Number.isSafeInteger(data.world.revision)||data.world.revision<0)return false;
+  if(data.notes!==undefined&&(!validHistory(data.notes)||data.notes.worldId!==data.world.id||data.notes.epoch!==data.world.epoch))return false;
   if(data.world.cottage&&!validCottageState(data.world.cottage))return false;
   if((data.world.version>=4||data.world.bird)&&!validBirdState(data.world.bird))return false;
   if(data.world.bird?.mode==='routine'&&(data.world.action||data.world.nest?.stage!=='built'))return false;
@@ -41,7 +43,9 @@ export class WorldClient {
   accept(data) {
     if(!validSnapshot(data))return false;
     const current = this.snapshot;
-    if (current && (data.serverTime <= current.serverTime || data.world.revision < current.world.revision)) return false;
+    const replaced=current?.notes&&data.notes&&!sameIdentity(current.notes,data.notes);
+    if (current && (data.serverTime <= current.serverTime || !replaced&&data.world.revision < current.world.revision)) return false;
+    if(replaced){this.snapshot=null;this.lastRendered=-Infinity;}
     // Preserve the last rendered instant when a newer response has more latency.
     if (current) this.now();
     if(Math.min(data.validUntil,boundary(data)-1)<this.lastRendered)return false;

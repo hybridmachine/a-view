@@ -64,10 +64,20 @@
     <span class="panel-eyebrow">STILLWATER VALLEY</span>
     <h2 id="notes-heading">Field notes</h2>
     <p class="subtle">Small things, noticed over time.</p>
+    <section class="visit-recap" aria-labelledby="recap-heading">
+      <h3 id="recap-heading">A place to return to</h3>
+      <p id="recap-text">This browser will remember your visit.</p>
+      <button id="retry-notes" class="notes-link" hidden>Try again</button>
+    </section>
+    <p id="notes-mode" class="subtle" hidden></p>
+    <h3 class="notes-section-heading">In this view</h3>
     <div class="nest-observation"><span class="nest-drawing" aria-hidden="true">⌒</span><div><h3>In the old oak</h3><p id="nest-detail">A nest is taking shape.</p><p id="bird-detail"></p></div></div>
     <div class="nest-observation"><span class="nest-drawing" aria-hidden="true">⌂</span><div><h3>At the cottage</h3><p id="cottage-detail">A quiet cottage beside the lake.</p></div></div>
+    <h3 class="notes-section-heading">Recent notes</h3>
     <ol id="event-list" class="event-list"></ol>
     <p class="panel-footnote">These notes follow what has happened in the shared world.</p>
+    <p id="visit-storage" class="subtle">Visit memory stays in this browser.</p>
+    <button id="forget-visits" class="notes-link">Forget visit memory</button>
   </dialog>
 
   <dialog id="explore-dialog" class="panel explore-panel" aria-labelledby="explore-heading">

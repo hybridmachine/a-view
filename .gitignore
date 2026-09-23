@@ -47,3 +47,10 @@ docs/engagement-validation/*.png
 !docs/engagement-validation/dusk.png
 !docs/engagement-validation/portrait.png
 docs/engagement-validation/*.webm
+
+# Regenerable field-note fixture matrix; retain representative panel captures.
+docs/field-notes-validation/*.png
+!docs/field-notes-validation/first-visit.png
+!docs/field-notes-validation/long-absence.png
+!docs/field-notes-validation/portrait.png
+!docs/field-notes-validation/narrow-portrait.png

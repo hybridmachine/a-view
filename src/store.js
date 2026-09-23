@@ -3,6 +3,7 @@ import { ACTION_DURATION, SCENES, calendar, nextForage, weather } from '../share
 import { advanceSurface, createSurfaceState, surfaceTime, validSurfaceState, MAX_SURFACE_TICKS, SURFACE_TICK_MS } from '../shared/surface-weather.js';
 import {createCottageState, validCottageState, cottageBoundary, decideCottage, completeCottage} from '../shared/cottage.js';
 import {createBirdState,validBirdState,birdBoundary,decideBird,completeBird} from '../shared/bird.js';
+import {initializeNotes,notesHistory,summarizeNotes} from './notes-store.js';
 
 export const MAX_WORLD_BOUNDARIES=120_000;
 export const nextCommitAt=state=>Math.min(state.action?.end??Infinity,birdBoundary(state.bird),cottageBoundary(state.cottage));
@@ -41,6 +42,7 @@ export class WorldStore {
       if(!columns.includes('payload'))this.db.exec('ALTER TABLE events ADD COLUMN payload TEXT');
       if(!columns.includes('noteVisible'))this.db.exec('ALTER TABLE events ADD COLUMN noteVisible INTEGER NOT NULL DEFAULT 1');
       this.db.exec('CREATE INDEX IF NOT EXISTS visible_notes ON events(noteVisible,seq)');
+      this.notesId=initializeNotes(this.db);
       this.db.prepare('UPDATE world SET state=? WHERE id=?').run(JSON.stringify(current),'stillwater');
       this.db.exec('COMMIT');
     } catch(error) { this.db.exec('ROLLBACK'); this.db.close(); throw error; }
@@ -106,7 +108,14 @@ export class WorldStore {
     if (now - surfaceTime(state.environment) >= SURFACE_TICK_MS || nextCommitAt(state)<=now) {
       const error = new Error('World is catching up'); error.code = 'WORLD_CATCHING_UP'; throw error;
     }
-    return { serverTime: now, validUntil: now + 30_000, nextCommitAt:nextCommitAt(state), world: state, scenes: SCENES, calendar: calendar(state.epoch, now), weather: weather(state.epoch, now), events: this.db.prepare('SELECT * FROM events WHERE noteVisible=1 ORDER BY seq DESC LIMIT 20').all() };
+    const events=this.db.prepare('SELECT * FROM events WHERE noteVisible=1 ORDER BY seq DESC LIMIT 20').all();
+    return { serverTime: now, validUntil: now + 30_000, nextCommitAt:nextCommitAt(state), world: state, scenes: SCENES, calendar: calendar(state.epoch, now), weather: weather(state.epoch, now), events, notes:notesHistory(this.notesId,state,events[0]) };
+  }
+  notes(interval) {
+    // This read never advances the simulation, including during long catch-up.
+    const state=JSON.parse(this.db.prepare('SELECT state FROM world WHERE id=?').get('stillwater').state);
+    const head=this.db.prepare('SELECT seq,id FROM events WHERE noteVisible=1 ORDER BY seq DESC LIMIT 1').get();
+    return summarizeNotes(this.db,notesHistory(this.notesId,state,head),interval);
   }
   close() { this.db.close(); }
 }
