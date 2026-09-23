@@ -86,6 +86,24 @@ test('notes metadata persists across restart without changing simulation version
   }finally{rmSync(directory,{recursive:true,force:true});}
 });
 
+test('habit evidence must identify the completion of its own action',()=>{
+  const store=new WorldStore(':memory:',epoch);
+  try{
+    const a=store.snapshot(epoch),b=store.snapshot(epoch+86_400_000),q=interval(a,b);
+    const valid=store.notes(q),habit=valid.facts.find(f=>f.kind==='bird-habit');
+    assert.ok(habit);assert.equal(valid.coverage,'complete');
+    const proof=store.db.prepare('SELECT * FROM events WHERE id=?').get(habit.supporting[0].id);
+    const payload=JSON.parse(proof.payload);
+    for(const actionId of ['another-action','',null]){
+      store.db.prepare('UPDATE events SET payload=? WHERE id=?').run(JSON.stringify({...payload,actionId}),proof.id);
+      const result=store.notes(q);
+      assert.equal(result.coverage,'partial');assert.ok(!result.facts.some(f=>f.kind==='bird-habit'));
+    }
+    store.db.prepare('UPDATE events SET payload=? WHERE id=?').run(proof.payload,proof.id);
+    assert.deepEqual(store.notes(q),valid);
+  }finally{store.close();}
+});
+
 test('first visit is quiet; a new tab recalls the previous view and reload freezes its interval',()=>{
   const {a,b,c}=snapshots(),local=storage(),firstSession=storage();let time=0;
   const first=new VisitMemory({local,session:firstSession,clock:()=>time});
@@ -132,15 +150,34 @@ test('corrupt/blocked storage degrades quietly and forgetting memory preserves F
   assert.equal(ephemeral.available,false);assert.ok(ephemeral.visit);ephemeral.forget();
 });
 
-test('a paused tab cannot overwrite newer-world memory when it reads old notes',()=>{
-  const {a,b}=snapshots(),local=storage();
-  const older=new VisitMemory({local,session:storage()});older.observe(a);older.observe(b);older.flush(true);
-  const replacement=new WorldStore(':memory:',epoch+2*86_400_000);
+test('a paused tab cannot overwrite replacement-world memory with either clock ordering',()=>{
+  const {a,b}=snapshots();
+  for(const offset of [-2*86_400_000,2*86_400_000]){
+    const local=storage();
+    const older=new VisitMemory({local,session:storage()});older.observe(a);older.observe(b);older.flush(true);
+    const replacement=new WorldStore(':memory:',epoch+offset);
+    try{
+      const newer=new VisitMemory({local,session:storage()}),snapshot=replacement.snapshot(epoch+offset);
+      newer.observe(snapshot);
+      assert.equal(JSON.parse(local.getItem(MEMORY_KEY)).identity.id,snapshot.notes.id,'a displayed replacement can take over');
+      older.read(b.notes);
+      assert.equal(JSON.parse(local.getItem(MEMORY_KEY)).identity.id,snapshot.notes.id,'reading the paused old view cannot take over');
+      older.observe({...b,serverTime:b.serverTime+10_000});older.flush(true);
+      assert.equal(JSON.parse(local.getItem(MEMORY_KEY)).identity.id,snapshot.notes.id,'another old-history observation cannot take over');
+      older.observe(snapshot);older.flush(true);
+      assert.equal(older.record.identity.id,snapshot.notes.id,'the old tab can join the replacement history');
+    }finally{replacement.close();}
+  }
+});
+
+test('an observed replacement cannot overwrite a third history that superseded its predecessor',()=>{
+  const {a}=snapshots(),local=storage(),tab=new VisitMemory({local,session:storage()});tab.observe(a);
+  const second=new WorldStore(':memory:',epoch-100_000),third=new WorldStore(':memory:',epoch-200_000);
   try{
-    const newer=new VisitMemory({local,session:storage()}),snapshot=replacement.snapshot(epoch+2*86_400_000);
-    newer.observe(snapshot);older.read(b.notes);
-    assert.equal(JSON.parse(local.getItem(MEMORY_KEY)).identity.id,snapshot.notes.id);
-  }finally{replacement.close();}
+    const incoming=second.snapshot(epoch-100_000),other=new VisitMemory({local,session:storage()}),latest=third.snapshot(epoch-200_000);
+    other.observe(latest);tab.observe(incoming);
+    assert.equal(JSON.parse(local.getItem(MEMORY_KEY)).identity.id,latest.notes.id);
+  }finally{second.close();third.close();}
 });
 
 function fakeRoot(){

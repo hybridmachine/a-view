@@ -1,11 +1,11 @@
 # Field notes that remember visits
 
-Validated September 22, 2026, using Node 26.7.0 and Chromium 140 / ANGLE Metal on an Apple M1. All worlds were disposable. The implementation adds a short optional return recap to the existing panel, backed by committed history and browser-local observation/read cursors.
+Validated September 22, 2026, with review fixes checked September 23, using Node 26.7.0 and Chromium 140 / ANGLE Metal on an Apple M1. All worlds were disposable. The implementation adds a short optional return recap to the existing panel, backed by committed history and browser-local observation/read cursors.
 
 | Check | Result |
 | --- | --- |
 | `npm run check` | Passed |
-| `npm test` | 98 passed, including 12 field-note tests |
+| `npm test` | 100 passed, including 14 field-note tests |
 | [Field-note browser checks](browser-results.json) | 56 passed; no uncaught browser errors |
 | [Existing visitor-display checks](display-results.json) | 12 passed |
 | [Existing bird checks](bird-browser-results.json) | 18 passed, including quiet notes, pause, studies, and sound |
@@ -24,7 +24,9 @@ Unit tests establish exclusive-start/inclusive-end boundaries, equal timestamps,
 
 The history identity is stored in an additive `metadata` table; an additive `notes_by_type` index supports type/sequence range selection. Simulation schema version 4 and its scheduling remain unchanged. Restart retains notes identity, and normal SQLite backup preserves it. An invalid interval receives HTTP 400; an incompatible history anchor yields an explicit reset result. Unknown or malformed selected facts produce partial coverage instead of a false no-change claim. HTTP checks also verify no-store responses, HEAD behavior, and rejection of mutation methods.
 
-The legacy final delivery is recognized by its known type and `delivery-12` ID, not by prose. The three-day bird claim validates the milestone payload and its three actual completed-return records. Current nest state alone is never used to infer when completion occurred.
+The legacy final delivery is recognized by its known type and `delivery-12` ID, not by prose. The three-day bird claim validates the milestone payload and its three actual completed-return records, including matching each completion ID to the action ID in its payload. Current nest state alone is never used to infer when completion occurred.
+
+Review fixes replace cross-world timestamp comparisons with explicit permission to replace this tab's previously displayed history identity. The permission is consumed after publication and cannot overwrite a third identity that superseded that predecessor. Regressions cover replacement clocks both ahead of and behind the old tab, continued old-history observation, joining the replacement, and a competing third history. Mismatched, empty, or missing action IDs in bird-habit proofs now yield partial coverage and omit the unsupported habit claim. Syntax checks, the full 100-test suite, and the 56 focused browser checks were rerun for these fixes; the display/bird reports and performance measurements remain from the initial implementation.
 
 ## Query cost
 

@@ -49,6 +49,7 @@ export function summarizeNotes(db,history,interval) {
       if(valid)for(const r of p.returns){
         const e=typeof r?.id==='string'?byId.get(r.id):null,q=payloadOf(e);
         if(!e||e.type!=='bird.action-completed'||e.seq>event.seq||q?.birdId!==p.birdId||q.kind!=='flight'||q.to!=='oak-perch'||
+          typeof q.actionId!=='string'||!q.actionId||e.id!==`${q.actionId}:action-completed`||
           !['oak-shelter','roof-perch'].includes(q.from)||q.end!==e.at||calendar(history.epoch,e.at).day!==r.day){valid=false;break;}
         proofs.push(e);
       }

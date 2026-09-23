@@ -22,7 +22,7 @@ export class VisitMemory {
     this.local=local;this.session=session;this.clock=clock;this.available=!!local&&!!session;
     this.record=this.load(local,MEMORY_KEY,validRecord);
     this.visit=this.load(session,SESSION_KEY,validVisit);
-    this.lastWrite=-Infinity;this.dirty=false;this.generation=0;
+    this.lastWrite=-Infinity;this.dirty=false;this.generation=0;this.replacesIdentity=null;
   }
   load(storage,key,validate) {
     try{const raw=storage?.getItem(key);if(!raw||raw.length>4096)return null;const value=JSON.parse(raw);return validate(value)?value:null;}
@@ -45,6 +45,9 @@ export class VisitMemory {
       this.record.observed.cursor.seq<=observation.cursor.seq&&
       (this.record.observed.cursor.seq!==observation.cursor.seq||sameCursor(this.record.observed.cursor,observation.cursor));
     if(!compatible){
+      // Only a displayed transition can replace the history this tab previously
+      // knew. Timestamps from different worlds do not establish that authority.
+      this.replacesIdentity=this.record&&!sameIdentity(this.record.identity,identity)?clone(this.record.identity):null;
       this.record={version:1,identity,observed:clone(observation),read:clone(observation.cursor)};
       this.visit=null;
     }
@@ -72,13 +75,15 @@ export class VisitMemory {
     const stored=this.load(this.local,MEMORY_KEY,validRecord);
     // A tab paused on a replaced world can still read its old notes, but must
     // not overwrite the newer world's memory established by another tab.
-    if(stored&&!sameIdentity(stored.identity,this.record.identity)&&stored.observed.at>=this.record.observed.at){
+    if(stored&&!sameIdentity(stored.identity,this.record.identity)&&!sameIdentity(stored.identity,this.replacesIdentity)){
+      this.replacesIdentity=null;
       this.lastWrite=this.clock();this.dirty=false;return;
     }
     this.merge(stored);
     try{
       if(!this.local||!this.session)throw new Error('Storage unavailable');
       this.local.setItem(MEMORY_KEY,JSON.stringify(this.record));
+      this.replacesIdentity=null;
       this.session.setItem(SESSION_KEY,JSON.stringify(this.visit));
     }catch{this.available=false;}
     this.lastWrite=this.clock();this.dirty=false;
@@ -98,7 +103,7 @@ export class VisitMemory {
     this.forget();this.observe(snapshot);
   }
   forget(removeLocal=true) {
-    this.record=null;this.visit=null;this.dirty=false;this.generation++;this.lastWrite=-Infinity;
+    this.record=null;this.visit=null;this.dirty=false;this.generation++;this.lastWrite=-Infinity;this.replacesIdentity=null;
     try{if(removeLocal)this.local?.removeItem(MEMORY_KEY);this.session?.removeItem(SESSION_KEY);}
     catch{this.available=false;}
   }
